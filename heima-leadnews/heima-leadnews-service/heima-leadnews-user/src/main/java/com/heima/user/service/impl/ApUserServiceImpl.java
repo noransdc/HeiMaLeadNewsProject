@@ -48,6 +48,8 @@ public class ApUserServiceImpl extends ServiceImpl<ApUserMapper, ApUser> impleme
 
             //1.3 返回数据  jwt  user
             String token = AppJwtUtil.getToken(dbUser.getId().longValue());
+            log.info("login token:{}", token);
+
             Map<String,Object> map = new HashMap<>();
             map.put("token",token);
             dbUser.setSalt("");

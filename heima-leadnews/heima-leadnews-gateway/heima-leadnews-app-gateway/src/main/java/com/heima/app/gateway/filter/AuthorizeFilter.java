@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
+
 @Component
 @Slf4j
 public class AuthorizeFilter implements Ordered, GlobalFilter {
@@ -25,7 +27,9 @@ public class AuthorizeFilter implements Ordered, GlobalFilter {
         ServerHttpResponse response = exchange.getResponse();
 
         //2.判断是否是登录
-        if(request.getURI().getPath().contains("/login")){
+        String path = request.getURI().getPath();
+
+        if(path.contains("/login") ){
             //放行
             return chain.filter(exchange);
         }
@@ -33,6 +37,7 @@ public class AuthorizeFilter implements Ordered, GlobalFilter {
 
         //3.获取token
         String token = request.getHeaders().getFirst("token");
+        log.info("gateway token:{}", token);
 
         //4.判断token是否存在
         if(StringUtils.isBlank(token)){
