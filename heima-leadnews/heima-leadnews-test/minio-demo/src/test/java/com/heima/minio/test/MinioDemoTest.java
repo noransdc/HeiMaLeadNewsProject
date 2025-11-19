@@ -22,7 +22,7 @@ public class MinioDemoTest {
     @Test
     public void uploadHtml(){
         try {
-            FileInputStream fileInputStream = new FileInputStream("D:\\list.html");
+            FileInputStream fileInputStream = new FileInputStream("D:\\js\\axios.min.js");
 
             MinioClient minioClient = MinioClient.builder()
                     .credentials("minio", "minio123")
@@ -30,15 +30,15 @@ public class MinioDemoTest {
                     .build();
 
             PutObjectArgs putObjectArgs = PutObjectArgs.builder()
-                    .object("list.html")
-                    .contentType("text/html")
+                    .object("plugins/js/axios.min.js")
+                    .contentType("text/js")
                     .bucket("leadnews")
                     .stream(fileInputStream, fileInputStream.available(), -1)
                     .build();
 
             minioClient.putObject(putObjectArgs);
 
-            System.out.println("http://192.168.238.101:9000/leadnews/list.html");
+//            System.out.println("http://192.168.238.101:9000/leadnews/list.html");
 
         } catch (Exception e){
             e.printStackTrace();
