@@ -1,0 +1,69 @@
+##############
+# IntelliJ IDEA
+##############
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# IDEA 自动生成的编译输出
+out/
+
+##############
+# Maven
+##############
+# 所有子模块编译生成的 target 目录
+target/
+
+# Maven Wrapper（如果不用，可以忽略）
+.mvn/
+mvnw
+mvnw.cmd
+
+##############
+# Java
+##############
+*.class
+*.jar
+*.war
+*.ear
+
+# 工具生成
+hs_err_pid*
+replay_pid*
+
+##############
+# OS / System files
+##############
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Linux
+*~
+
+##############
+# Logs
+##############
+*.log
+log/
+logs/
+
+##############
+# Leadnews 相关（按你的项目情况定制）
+##############
+
+# MinIO 临时上传文件（如果有）
+*.tmp
+
+# Freemarker 生成的静态 HTML（如果你不想提交）
+*.html
+
+# Swagger / Knife4j 缓存（如果生成过）
+swagger-ui/
+META-INF/
+
