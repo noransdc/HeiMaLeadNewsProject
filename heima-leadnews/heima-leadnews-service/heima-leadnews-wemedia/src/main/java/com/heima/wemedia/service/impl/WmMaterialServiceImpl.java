@@ -1,11 +1,17 @@
 package com.heima.wemedia.service.impl;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.file.service.FileStorageService;
+import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
+import com.heima.model.wemedia.dtos.WmMaterialDto;
 import com.heima.model.wemedia.pojos.WmMaterial;
 import com.heima.model.wemedia.pojos.WmUser;
 import com.heima.thread.WmThreadLocalUtil;
@@ -70,5 +76,55 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
 
         return ResponseResult.okResult(wmMaterial);
     }
+
+    @Override
+    public PageResponseResult findList(WmMaterialDto dto) {
+        dto.checkParam();
+
+        LambdaQueryWrapper<WmMaterial> wrapper = new LambdaQueryWrapper<>();
+
+        if (dto.getIsCollection() == 1){
+            wrapper.eq(WmMaterial::getIsCollection, dto.getIsCollection());
+        }
+
+        wrapper.eq(WmMaterial::getUserId, WmThreadLocalUtil.getUser().getId());
+
+        wrapper.orderByDesc(WmMaterial::getCreatedTime);
+
+        IPage<WmMaterial> page = new Page<>(dto.getPage(), dto.getSize());
+        page = page(page, wrapper);
+
+        PageResponseResult pageResponseResult = new PageResponseResult(dto.getPage(), dto.getSize(), (int)page.getTotal());
+        pageResponseResult.setData(page.getRecords());
+        return pageResponseResult;
+    }
+
+    @Override
+    public ResponseResult addCollection(Integer id) {
+        return updateCollectionStatus(id, 1);
+    }
+
+    @Override
+    public ResponseResult cancelCollection(Integer id) {
+        return updateCollectionStatus(id, 0);
+    }
+
+    private ResponseResult updateCollectionStatus(Integer id, int status){
+        if (id == null || id <= 0){
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+        }
+
+        boolean update = lambdaUpdate()
+                .eq(WmMaterial::getId, id)
+                .set(WmMaterial::getIsCollection, status)
+                .update();
+
+        if (!update){
+            return ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST);
+        }
+
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+    }
+
 
 }

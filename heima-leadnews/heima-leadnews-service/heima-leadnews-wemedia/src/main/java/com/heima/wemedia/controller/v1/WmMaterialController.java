@@ -1,13 +1,12 @@
 package com.heima.wemedia.controller.v1;
 
 import com.heima.model.common.dtos.ResponseResult;
+import com.heima.model.wemedia.dtos.WmMaterialDto;
 import com.heima.wemedia.service.WmMaterialService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 
@@ -25,6 +24,19 @@ public class WmMaterialController {
         return ResponseResult.okResult(materialService.uploadPicture(multipartFile));
     }
 
+    @PostMapping("/list")
+    public ResponseResult findList(@RequestBody WmMaterialDto dto){
+        return materialService.findList(dto);
+    }
 
+    @GetMapping("/collect/{id}")
+    public ResponseResult addCollection(@PathVariable Integer id){
+        return materialService.addCollection(id);
+    }
+
+    @GetMapping("/cancel_collect/{id}")
+    public ResponseResult cancelCollection(@PathVariable Integer id){
+        return materialService.cancelCollection(id);
+    }
 
 }
