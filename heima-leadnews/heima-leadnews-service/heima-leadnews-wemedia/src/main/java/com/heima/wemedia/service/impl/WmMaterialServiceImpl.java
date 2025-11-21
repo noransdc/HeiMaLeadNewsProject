@@ -89,6 +89,8 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
 
         wrapper.eq(WmMaterial::getUserId, WmThreadLocalUtil.getUser().getId());
 
+        wrapper.eq(WmMaterial::getIsDeleted, 0);
+
         wrapper.orderByDesc(WmMaterial::getCreatedTime);
 
         IPage<WmMaterial> page = new Page<>(dto.getPage(), dto.getSize());
@@ -117,6 +119,25 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
         boolean update = lambdaUpdate()
                 .eq(WmMaterial::getId, id)
                 .set(WmMaterial::getIsCollection, status)
+                .update();
+
+        if (!update){
+            return ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST);
+        }
+
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+    }
+
+    @Override
+    public ResponseResult delete(Integer id) {
+        if (id == null || id <= 0){
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+        }
+
+        boolean update = lambdaUpdate()
+                .eq(WmMaterial::getId, id)
+                .set(WmMaterial::getIsDeleted, 1)
+                .set(WmMaterial::getDeleteTime, new Date())
                 .update();
 
         if (!update){

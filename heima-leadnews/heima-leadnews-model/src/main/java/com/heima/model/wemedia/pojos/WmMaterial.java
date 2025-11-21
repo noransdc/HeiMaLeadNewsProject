@@ -48,6 +48,12 @@ public class WmMaterial implements Serializable {
     @TableField("is_collection")
     private Short isCollection;
 
+    @TableField("is_deleted")
+    private Short isDeleted;
+
+    @TableField("delete_time")
+    private Short deleteTime;
+
     /**
      * 创建时间
      */
