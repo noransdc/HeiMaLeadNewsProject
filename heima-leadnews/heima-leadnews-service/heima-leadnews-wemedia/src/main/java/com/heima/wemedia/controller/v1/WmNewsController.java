@@ -6,10 +6,7 @@ import com.heima.model.wemedia.dtos.WmNewsDto;
 import com.heima.model.wemedia.dtos.WmNewsPageReqDto;
 import com.heima.wemedia.service.WmNewsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -27,6 +24,11 @@ public class WmNewsController {
     @PostMapping("/submit")
     public ResponseResult submitNews(@RequestBody WmNewsDto dto){
         return wmNewsService.submitNews(dto);
+    }
+
+    @GetMapping("/one/{id}")
+    public ResponseResult selectOne(@PathVariable Integer id){
+        return wmNewsService.findOne(id);
     }
 
 }

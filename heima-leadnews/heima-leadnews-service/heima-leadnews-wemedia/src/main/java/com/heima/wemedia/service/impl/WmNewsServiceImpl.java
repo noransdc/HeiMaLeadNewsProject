@@ -15,7 +15,7 @@ import com.heima.model.wemedia.dtos.WmNewsPageReqDto;
 import com.heima.model.wemedia.pojos.WmMaterial;
 import com.heima.model.wemedia.pojos.WmNews;
 import com.heima.model.wemedia.pojos.WmNewsMaterial;
-import com.heima.model.wemedia.vo.WmNewsLisVo;
+import com.heima.model.wemedia.vo.WmNewsListVo;
 import com.heima.thread.WmThreadLocalUtil;
 import com.heima.wemedia.mapper.WmMaterialMapper;
 import com.heima.wemedia.mapper.WmNewsMapper;
@@ -39,6 +39,17 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 
     @Autowired
     private WmNewsMaterialMapper wmNewsMaterialMapper;
+
+    @Override
+    public ResponseResult findOne(Integer id) {
+        if (id == null || id <= 0){
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+        }
+        WmNews wmNews = lambdaQuery()
+                .eq(WmNews::getId, id)
+                .one();
+        return ResponseResult.okResult(wmNews);
+    }
 
     @Override
     public ResponseResult findList(WmNewsPageReqDto dto) {
@@ -66,8 +77,8 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 
         Page<WmNews> page = page(new Page<>(dto.getPage(), dto.getSize()), wrapper);
 
-        List<WmNewsLisVo> voList = page.getRecords().stream().map(item->{
-            WmNewsLisVo vo = new WmNewsLisVo();
+        List<WmNewsListVo> voList = page.getRecords().stream().map(item->{
+            WmNewsListVo vo = new WmNewsListVo();
             BeanUtils.copyProperties(item, vo);
             return vo;
         }).collect(Collectors.toList());
