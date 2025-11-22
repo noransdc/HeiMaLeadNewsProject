@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.heima.wemedia.mapper.WmNewsMaterialMapper">
+
+<!--
+mapper.xml 的核心语法，其实就 6 个标签
+<if>	动态条件（where 拼接）
+<where>	自动处理 AND / OR 的拼法
+<trim>	去掉多余的逗号、关键字
+<set>	update set 里的动态字段
+<foreach>	批量处理（IN，批量insert/update）
+<choose>	动态分支（SQL 里的 if-else）
+-->
+
+
+<!--
+1. 动态 where 条件
+SELECT * FROM wm_news
+WHERE status = 1
+  AND title LIKE CONCAT('%','科技','%');
+  -->
+    <select id="findList">
+        SELECT * FROM wm_news
+        <where>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND title LIKE CONCAT('%',#{keyword},'%')
+            </if>
+        </where>
+    </select>
+
+
+<!--
+2. 批量 INSERT（foreach）
+INSERT INTO wm_news_material(material_id, news_id)
+VALUES
+(10, 1001),
+(11, 1001),
+(12, 1001);
+-->
+    <insert id="batchInsert">
+        INSERT INTO wm_news_material(material_id, news_id)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.mid}, #{item.newsId})
+        </foreach>
+    </insert>
+
+
+<!--
+3. 批量删除（IN 条件）
+DELETE FROM wm_news_material
+WHERE news_id = 1001
+AND material_id IN (10, 11, 12);
+-->
+    <delete id="deleteRelations">
+        DELETE FROM wm_news_material
+        WHERE news_id = #{newsId}
+        AND material_id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+
+<!--
+4. 动态 update（set 自动去掉最后一个逗号）
+UPDATE wm_news
+SET title = '今日热点',
+    status = 1
+WHERE id = 10;
+-->
+    <update id="updateNews">
+        UPDATE wm_news
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="status != null">status = #{status}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+<!--
+5. choose / when / otherwise（SQL 的 if/else）
+情况 1：status=1
+SELECT * FROM wm_news
+WHERE status = 1;
+
+情况 2：status=null
+SELECT * FROM wm_news
+WHERE is_deleted = 0;
+-->
+    <select id="selectNews">
+        SELECT * FROM wm_news
+        <where>
+            <choose>
+                <when test="status != null">
+                    status = #{status}
+                </when>
+                <otherwise>
+                    is_deleted = 0
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+
+
+
+</mapper>

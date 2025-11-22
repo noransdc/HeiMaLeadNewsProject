@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.heima.wemedia.mapper.WmNewsMaterialMapper">
+
+    <select id="getValidList">
+        SELECT * FROM wm_material
+        <where>
+            <if test="is_deleted != null">
+                AND is_deleted != 1
+            </if>
+        </where>
+        AND url IN
+        <foreach collection="urls" item="url" separator=",">
+            #{url}
+        </foreach>
+    </select>
+
+
+
+</mapper>
