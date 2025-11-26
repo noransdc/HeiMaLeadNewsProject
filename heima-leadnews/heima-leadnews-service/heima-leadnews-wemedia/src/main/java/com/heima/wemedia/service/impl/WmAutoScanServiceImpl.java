@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +48,7 @@ public class WmAutoScanServiceImpl implements WmAutoScanService {
     private WmUserMapper wmUserMapper;
 
     @Override
+    @Async
     public void autoScanWmNews(Integer id) {
         WmNews wmNews = wmNewsMapper.selectById(id);
         if (wmNews == null){

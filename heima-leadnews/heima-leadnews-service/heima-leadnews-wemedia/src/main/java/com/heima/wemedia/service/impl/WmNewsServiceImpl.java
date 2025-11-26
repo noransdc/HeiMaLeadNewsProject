@@ -78,6 +78,7 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
         }
 
         wrapper.eq(WmNews::getUserId, WmThreadLocalUtil.getUser().getId());
+        wrapper.orderByDesc(WmNews::getCreatedTime);
 
         Page<WmNews> page = page(new Page<>(dto.getPage(), dto.getSize()), wrapper);
 
