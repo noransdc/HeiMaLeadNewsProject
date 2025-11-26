@@ -20,6 +20,7 @@ import com.heima.thread.WmThreadLocalUtil;
 import com.heima.wemedia.mapper.WmMaterialMapper;
 import com.heima.wemedia.mapper.WmNewsMapper;
 import com.heima.wemedia.mapper.WmNewsMaterialMapper;
+import com.heima.wemedia.service.WmAutoScanService;
 import com.heima.wemedia.service.WmNewsService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -39,6 +40,9 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 
     @Autowired
     private WmNewsMaterialMapper wmNewsMaterialMapper;
+
+    @Autowired
+    private WmAutoScanService wmAutoScanService;
 
     @Override
     public ResponseResult findOne(Integer id) {
@@ -138,9 +142,15 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
             updateById(wmNews);
         }
 
-        saveRelation(contentMaterialList, wmNews, WeMediaConstants.WM_CONTENT_REFERENCE);
+        if (!contentMaterialList.isEmpty()){
+            saveRelation(contentMaterialList, wmNews, WeMediaConstants.WM_CONTENT_REFERENCE);
+        }
 
-        saveRelation(coverMaterialList, wmNews, WeMediaConstants.WM_COVER_REFERENCE);
+        if (!coverMaterialList.isEmpty()){
+            saveRelation(coverMaterialList, wmNews, WeMediaConstants.WM_COVER_REFERENCE);
+        }
+
+        wmAutoScanService.autoScanWmNews(wmNews.getId());
 
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
