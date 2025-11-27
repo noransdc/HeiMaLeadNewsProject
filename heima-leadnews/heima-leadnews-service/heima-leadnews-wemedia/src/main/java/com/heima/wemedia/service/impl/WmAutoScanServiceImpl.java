@@ -1,6 +1,7 @@
 package com.heima.wemedia.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.heima.apis.article.IArticleClient;
 import com.heima.common.aliyun.GreenImageScanV2;
 import com.heima.common.aliyun.GreenTextScanV1;
@@ -9,9 +10,12 @@ import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.wemedia.pojos.WmChannel;
 import com.heima.model.wemedia.pojos.WmNews;
+import com.heima.model.wemedia.pojos.WmSensitive;
 import com.heima.model.wemedia.pojos.WmUser;
+import com.heima.utils.common.SensitiveWordUtil;
 import com.heima.wemedia.mapper.WmChannelMapper;
 import com.heima.wemedia.mapper.WmNewsMapper;
+import com.heima.wemedia.mapper.WmSensitiveMapper;
 import com.heima.wemedia.mapper.WmUserMapper;
 import com.heima.wemedia.service.WmAutoScanService;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +53,10 @@ public class WmAutoScanServiceImpl implements WmAutoScanService {
     @Autowired
     private WmUserMapper wmUserMapper;
 
+    @Autowired
+    private WmSensitiveMapper wmSensitiveMapper;
+
+
     @Override
     @Async
     public void autoScanWmNews(Integer id) {
@@ -64,6 +72,11 @@ public class WmAutoScanServiceImpl implements WmAutoScanService {
         Map<String, List<String>> parseMap = parseContent(wmNews);
         List<String> textList = parseMap.get("text");
         List<String> images = parseMap.get("images");
+
+        boolean localScanSensitive = localScanSensitive(textList, wmNews);
+        if (!localScanSensitive){
+            return;
+        }
 
         boolean scanTextResult = scanText(textList, wmNews);
         if (!scanTextResult){
@@ -85,6 +98,37 @@ public class WmAutoScanServiceImpl implements WmAutoScanService {
         wmNews.setStatus(WmNews.Status.PUBLISHED.getCode());
         wmNews.setReason("发布成功");
         wmNewsMapper.updateById(wmNews);
+    }
+
+    private boolean localScanSensitive(List<String> textList, WmNews wmNews){
+        if (textList.isEmpty()){
+            return true;
+        }
+        String text = textList.get(0);
+        if (StringUtils.isBlank(text)){
+            return true;
+        }
+        LambdaQueryWrapper<WmSensitive> wrapper = new LambdaQueryWrapper<>();
+        wrapper.select(WmSensitive::getSensitives);
+        List<WmSensitive> sensitives = wmSensitiveMapper.selectList(wrapper);
+        if (sensitives.isEmpty()){
+            return true;
+        }
+        List<String> sensitiveWords = sensitives.stream().map(WmSensitive::getSensitives).collect(Collectors.toList());
+        if (sensitiveWords.isEmpty()){
+            return true;
+        }
+        SensitiveWordUtil.initMap(sensitiveWords);
+
+        Map<String, Integer> map = SensitiveWordUtil.matchWords(text);
+        if (map.isEmpty()){
+            return true;
+        }
+        wmNews.setStatus(WmNews.Status.FAIL.getCode());
+        wmNews.setReason(map.toString());
+        wmNewsMapper.updateById(wmNews);
+
+        return false;
     }
 
     private ResponseResult saveArticle(WmNews wmNews){
