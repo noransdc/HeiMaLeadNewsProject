@@ -5,6 +5,8 @@ import com.heima.apis.article.IArticleClient;
 import com.heima.common.aliyun.GreenImageScanV2;
 import com.heima.common.aliyun.GreenTextScanV1;
 import com.heima.model.article.dtos.ArticleDto;
+import com.heima.model.common.dtos.ResponseResult;
+import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.wemedia.pojos.WmChannel;
 import com.heima.model.wemedia.pojos.WmNews;
 import com.heima.model.wemedia.pojos.WmUser;
@@ -73,15 +75,19 @@ public class WmAutoScanServiceImpl implements WmAutoScanService {
             return;
         }
 
+        ResponseResult responseResult = saveArticle(wmNews);
+
+        log.info("autoScanWmNews responseResult:{}", responseResult.getCode());
+        if (AppHttpCodeEnum.SUCCESS.getCode() != responseResult.getCode()){
+            throw new RuntimeException("WmNewsAutoScanServiceImpl-文章审核，保存app端相关文章数据失败");
+        }
+
         wmNews.setStatus(WmNews.Status.PUBLISHED.getCode());
         wmNews.setReason("发布成功");
         wmNewsMapper.updateById(wmNews);
-
-        saveArticle(wmNews);
-
     }
 
-    private void saveArticle(WmNews wmNews){
+    private ResponseResult saveArticle(WmNews wmNews){
 
         ArticleDto dto = new ArticleDto();
         BeanUtils.copyProperties(wmNews, dto);
@@ -102,7 +108,8 @@ public class WmAutoScanServiceImpl implements WmAutoScanService {
         dto.setId(wmNews.getArticleId());
 
 
-        articleClient.saveArticle(dto);
+        ResponseResult result = articleClient.saveArticle(dto);
+        return result;
     }
 
     private boolean scanText(List<String> list, WmNews wmNews){
