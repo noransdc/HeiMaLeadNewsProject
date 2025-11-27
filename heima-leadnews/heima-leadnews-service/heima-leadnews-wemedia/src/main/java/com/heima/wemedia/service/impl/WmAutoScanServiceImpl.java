@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.heima.apis.article.IArticleClient;
 import com.heima.common.aliyun.GreenImageScanV2;
 import com.heima.common.aliyun.GreenTextScanV1;
+import com.heima.common.tess4j.Tess4jClient;
+import com.heima.file.service.FileStorageService;
 import com.heima.model.article.dtos.ArticleDto;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
@@ -26,6 +28,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,6 +60,12 @@ public class WmAutoScanServiceImpl implements WmAutoScanService {
 
     @Autowired
     private WmSensitiveMapper wmSensitiveMapper;
+
+    @Autowired
+    private FileStorageService fileStorageService;
+
+    @Autowired
+    private Tess4jClient tess4jClient;
 
 
     @Override
@@ -183,6 +194,19 @@ public class WmAutoScanServiceImpl implements WmAutoScanService {
             return true;
         }
         try {
+            for (String s : list) {
+                byte[] bytes = fileStorageService.downLoadFile(s);
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+                BufferedImage read = ImageIO.read(inputStream);
+                String result = tess4jClient.doOCR(read);
+                List<String> textList = new ArrayList<>();
+                textList.add(result);
+                boolean scanSensitiveResult = localScanSensitive(textList, wmNews);
+                if (!scanSensitiveResult){
+                    return false;
+                }
+            }
+
             Map<String, String> map = greenImageScanV2.scan(list);
             return processScanResult(map, wmNews);
 
