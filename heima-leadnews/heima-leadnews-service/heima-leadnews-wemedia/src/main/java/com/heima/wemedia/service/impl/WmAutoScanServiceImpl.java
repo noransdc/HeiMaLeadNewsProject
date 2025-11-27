@@ -85,16 +85,19 @@ public class WmAutoScanServiceImpl implements WmAutoScanService {
         List<String> images = parseMap.get("images");
 
         boolean localScanSensitive = localScanSensitive(textList, wmNews);
+        log.info("localScanSensitive:{}", localScanSensitive);
         if (!localScanSensitive){
             return;
         }
 
         boolean scanTextResult = scanText(textList, wmNews);
+        log.info("scanTextResult:{}", scanTextResult);
         if (!scanTextResult){
             return;
         }
 
         boolean scanImagesResult = scanImages(images, wmNews);
+        log.info("scanImagesResult:{}", scanImagesResult);
         if (!scanImagesResult){
             return;
         }
@@ -198,12 +201,16 @@ public class WmAutoScanServiceImpl implements WmAutoScanService {
                 byte[] bytes = fileStorageService.downLoadFile(s);
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
                 BufferedImage read = ImageIO.read(inputStream);
-                String result = tess4jClient.doOCR(read);
-                List<String> textList = new ArrayList<>();
-                textList.add(result);
-                boolean scanSensitiveResult = localScanSensitive(textList, wmNews);
-                if (!scanSensitiveResult){
-                    return false;
+                if (read != null){
+                    String result = tess4jClient.doOCR(read);
+                    if (StringUtils.isNotBlank(result)){
+                        List<String> textList = new ArrayList<>();
+                        textList.add(result);
+                        boolean scanSensitiveResult = localScanSensitive(textList, wmNews);
+                        if (!scanSensitiveResult){
+                            return false;
+                        }
+                    }
                 }
             }
 
