@@ -2,13 +2,16 @@ package com.heima.schedule.test;
 
 
 import com.heima.common.redis.CacheService;
+import com.heima.model.schedule.pojos.Task;
 import com.heima.schedule.ScheduleApplication;
+import com.heima.schedule.service.TaskInfoService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 @SpringBootTest
@@ -18,6 +21,9 @@ public class CacheServiceTest {
 
     @Autowired
     private CacheService cacheService;
+
+    @Autowired
+    private TaskInfoService taskInfoService;
 
     @Test
     public void testList(){
@@ -39,4 +45,16 @@ public class CacheServiceTest {
         System.out.println("set:" + set);
 
     }
+
+    @Test
+    public void testAddTask(){
+        Task task = new Task();
+        task.setTaskType(100);
+        task.setPriority(200);
+        task.setExecuteTime(System.currentTimeMillis());
+        task.setParameters("zhangsan".getBytes(StandardCharsets.UTF_8));
+        taskInfoService.addTask(task);
+    }
+
+
 }

@@ -1423,19 +1423,23 @@ public class CacheService extends CachingConfigurerSupport {
     }
 
     public List<Object> refreshWithPipeline(String future_key,String topic_key,Collection<String> values){
+        if (values == null || values.isEmpty()){
+            return null;
+        }
 
-        List<Object> objects = stringRedisTemplate.executePipelined(new RedisCallback<Object>() {
+        return stringRedisTemplate.executePipelined(new RedisCallback<Object>() {
             @Nullable
             @Override
             public Object doInRedis(RedisConnection redisConnection) throws DataAccessException {
-                StringRedisConnection stringRedisConnection = (StringRedisConnection)redisConnection;
-                String[] strings = values.toArray(new String[values.size()]);
-                stringRedisConnection.rPush(topic_key,strings);
-                stringRedisConnection.zRem(future_key,strings);
+                StringRedisConnection conn = (StringRedisConnection)redisConnection;
+                String[] strings = values.toArray(new String[0]);
+                //往一个 List（topic_key）里面追加多个元素
+                conn.rPush(topic_key, strings);
+                //从一个 Sorted Set（future_key） 删除这些元素
+                conn.zRem(future_key, strings);
                 return null;
             }
         });
-        return objects;
     }
 
 }

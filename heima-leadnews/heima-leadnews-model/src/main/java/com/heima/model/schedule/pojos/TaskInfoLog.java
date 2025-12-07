@@ -15,7 +15,7 @@ import java.util.Date;
  */
 @Data
 @TableName("taskinfo_logs")
-public class TaskinfoLogs implements Serializable {
+public class TaskInfoLog implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
