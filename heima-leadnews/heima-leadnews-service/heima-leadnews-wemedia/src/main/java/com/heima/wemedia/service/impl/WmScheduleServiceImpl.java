@@ -34,6 +34,7 @@ public class WmScheduleServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> imp
     private WmAutoScanService wmAutoScanService;
 
     @Override
+    @Async
     public void addNewsToTask(Integer id, Date publishTime) {
         Task task = new Task();
         task.setTaskType(TaskTypeEnum.NEWS_SCAN_TIME.getTaskType());

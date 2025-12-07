@@ -71,8 +71,13 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, Taskinfo> i
     }
 
     @Scheduled(cron = "0 */1 * * * ?")
-    public void refreshFutureTask(){
+    public void refreshRedisFutureTask(){
         log.info("refreshFutureTask");
+        String token = cacheService.tryLock("FUTURE_TASK_SYNC", 1000 * 30);
+        if (StringUtils.isBlank(token)){
+            return;
+        }
+
         Set<String> futureKeys = cacheService.scan(ScheduleConstants.FUTURE + "*");
 
         for (String futureKey : futureKeys) {
