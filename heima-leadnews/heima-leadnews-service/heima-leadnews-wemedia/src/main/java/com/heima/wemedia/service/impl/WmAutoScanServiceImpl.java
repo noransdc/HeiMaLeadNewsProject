@@ -111,6 +111,12 @@ public class WmAutoScanServiceImpl implements WmAutoScanService {
 
         wmNews.setStatus(WmNews.Status.PUBLISHED.getCode());
         wmNews.setReason("发布成功");
+
+        Object data = responseResult.getData();
+        if (data instanceof Long){
+            wmNews.setArticleId((Long) data);
+        }
+
         wmNewsMapper.updateById(wmNews);
     }
 

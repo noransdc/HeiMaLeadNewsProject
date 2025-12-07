@@ -20,5 +20,6 @@ public interface WmNewsService extends IService<WmNews> {
 
     ResponseResult findOne(@PathVariable Integer id);
 
+    ResponseResult downOrUp(@RequestBody WmNewsDto dto);
 
 }
