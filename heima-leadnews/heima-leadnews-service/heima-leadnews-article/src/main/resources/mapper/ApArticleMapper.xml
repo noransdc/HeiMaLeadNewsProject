@@ -24,6 +24,7 @@
         <result column="publish_time" property="publishTime"/>
         <result column="sync_status" property="syncStatus"/>
         <result column="static_url" property="staticUrl"/>
+        <result column="content" property="content"/>
     </resultMap>
     <select id="loadArticleList" resultMap="resultMap">
         SELECT
@@ -47,6 +48,34 @@
         </where>
         order by aa.publish_time desc
         limit #{dto.size}
+    </select>
+
+
+    <resultMap id="esArticleMap" type="com.heima.model.article.vo.EsArticleVo">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="author_id" property="authorId"/>
+        <result column="author_name" property="authorName"/>
+        <result column="layout" property="layout"/>
+        <result column="images" property="images"/>
+        <result column="static_url" property="staticUrl"/>
+        <result column="publish_time" property="publishTime"/>
+        <result column="content" property="content"/>
+    </resultMap>
+
+    <select id="getAllList" resultMap="esArticleMap">
+        SELECT
+        tMain.*, tContent.content
+        FROM
+        `ap_article` tMain
+        LEFT JOIN ap_article_config tConfig ON tMain.id = tConfig.article_id
+        LEFT JOIN ap_article_content tContent ON tMain.id = tContent.article_id
+        <where>
+            and tConfig.is_delete != 1
+            and tConfig.is_down != 1
+
+        </where>
+        order by tMain.publish_time desc
     </select>
 
 </mapper>
