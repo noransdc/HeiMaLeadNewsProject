@@ -1,7 +1,7 @@
 package com.heima.search.controller;
 
 
-import com.heima.model.search.dto.ArticleSearchDto;
+import com.heima.model.search.dto.UserSearchDto;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.search.service.ArticleSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
+
 @RestController
 @RequestMapping("/api/v1/article/search")
 public class ArticleSearchController {
@@ -20,7 +21,7 @@ public class ArticleSearchController {
     private ArticleSearchService articleSearchService;
 
     @PostMapping("/search")
-    public ResponseResult search(@RequestBody ArticleSearchDto dto) throws IOException {
+    public ResponseResult search(@RequestBody UserSearchDto dto) throws IOException {
         return articleSearchService.search(dto);
     }
 

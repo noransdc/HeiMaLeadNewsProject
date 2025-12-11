@@ -3,8 +3,8 @@ package com.heima.article.test;
 
 import com.alibaba.fastjson.JSON;
 import com.heima.article.mapper.ApArticleMapper;
-import com.heima.model.article.pojos.ApArticle;
-import com.heima.model.article.vo.EsArticleVo;
+import com.heima.common.constants.ElasticSearchConstant;
+import com.heima.model.search.vo.SearchArticleVo;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
@@ -30,11 +30,11 @@ public class ApArticleTest {
 
     @Test
     public void init() throws Exception{
-        BulkRequest bulkRequest = new BulkRequest("app_info_article");
+        BulkRequest bulkRequest = new BulkRequest(ElasticSearchConstant.APP_INFO_ARTICLE);
 
-        List<EsArticleVo> list = apArticleMapper.getAllList();
+        List<SearchArticleVo> list = apArticleMapper.getAllList();
 
-        for (EsArticleVo article : list) {
+        for (SearchArticleVo article : list) {
             IndexRequest indexRequest = new IndexRequest();
             String json = JSON.toJSONString(article);
             indexRequest.id(article.getId().toString())

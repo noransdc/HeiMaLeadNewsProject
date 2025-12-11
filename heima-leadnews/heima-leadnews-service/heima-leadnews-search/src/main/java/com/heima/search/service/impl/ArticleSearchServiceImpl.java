@@ -1,6 +1,7 @@
 package com.heima.search.service.impl;
 
-import com.heima.model.search.dto.ArticleSearchDto;
+import com.heima.common.constants.ElasticSearchConstant;
+import com.heima.model.search.dto.UserSearchDto;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.search.service.ArticleSearchService;
@@ -35,7 +36,7 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
 
 
     @Override
-    public ResponseResult search(ArticleSearchDto dto) throws IOException {
+    public ResponseResult search(UserSearchDto dto) throws IOException {
         if (dto == null || StringUtils.isBlank(dto.getSearchWords())){
             return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
         }
@@ -55,8 +56,8 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
         Date currentDate = new Date();
         log.info("currentDate:{}", currentDate);
 
-
-        String EsIndexName = "app_info_article";//is similar to database name and table name
+        //is similar to database name and table name
+        String EsIndexName = ElasticSearchConstant.APP_INFO_ARTICLE;
 
         SearchRequest searchRequest = new SearchRequest(EsIndexName);
 

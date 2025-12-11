@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class ArticleSearchDto {
+public class UserSearchDto {
 
     /**
      * 搜索关键字
