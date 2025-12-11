@@ -21,4 +21,7 @@ public interface ArticleSearchService {
 
     ResponseResult delete( DeleteHistoryDto dto);
 
+    ResponseResult searchAssociate( UserSearchDto dto);
+
+
 }

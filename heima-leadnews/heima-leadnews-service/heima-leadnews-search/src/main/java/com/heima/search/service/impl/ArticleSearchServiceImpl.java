@@ -7,6 +7,7 @@ import com.heima.model.search.dto.UserSearchDto;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.user.pojos.ApUser;
+import com.heima.search.pojo.ApAssociateWords;
 import com.heima.search.pojo.ApUserSearch;
 import com.heima.search.service.ArticleSearchService;
 import com.heima.thread.AppThreadLocalUtil;
@@ -31,10 +32,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @Service
@@ -207,6 +205,37 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
         mongoTemplate.remove(Query.query(condition), ApUserSearch.class);
 
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+    }
+
+
+    @Override
+    public ResponseResult searchAssociate(UserSearchDto dto) {
+        if (dto == null){
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+        }
+
+        if (StringUtils.isBlank(dto.getSearchWords())){
+            return ResponseResult.okResult(Collections.emptyList());
+        }
+
+        if (dto.getPageSize() > 20){
+            dto.setPageSize(20);
+        }
+
+        String patternStr = ".*?\\" + dto.getSearchWords() + ".*";
+        log.info("patternStr:{}", patternStr);
+
+//        Criteria condition = Criteria.where("associateWords").is(dto.getSearchWords());
+        Criteria condition = Criteria.where("associateWords").regex(dto.getSearchWords());
+
+//        Query query = Query.query(Criteria.where("associateWords").regex(".*?\\" + dto.getSearchWords() + ".*"));
+//        query.limit(dto.getPageSize());
+        Query query = Query.query(condition)
+                .with(Sort.by(Sort.Direction.DESC, "createdTime"))
+                .limit(dto.getPageSize());
+        List<ApAssociateWords> list = mongoTemplate.find(query, ApAssociateWords.class);
+
+        return ResponseResult.okResult(list);
     }
 
 
