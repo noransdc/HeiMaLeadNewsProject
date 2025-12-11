@@ -1,6 +1,8 @@
 package com.heima.search.service.impl;
 
 import com.heima.common.constants.ElasticSearchConstant;
+import com.heima.model.search.dto.DeleteHistoryDto;
+import com.heima.model.search.dto.LoadHistoryDto;
 import com.heima.model.search.dto.UserSearchDto;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
@@ -154,7 +156,7 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
 
         Criteria listCondition = Criteria.where("userId").is(userId);
         Query listQuery = Query.query(listCondition);
-        listQuery.with(Sort.by(Sort.Direction.DESC, "createTime"));
+        listQuery.with(Sort.by(Sort.Direction.DESC, "createdTime"));
         List<ApUserSearch> searchList = mongoTemplate.find(listQuery, ApUserSearch.class);
 
         if (searchList.size() < 10 ){
@@ -166,6 +168,45 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
             mongoTemplate.findAndReplace(lastQuery, apUserSearch);
         }
 
+    }
+
+    @Override
+    public ResponseResult load(LoadHistoryDto dto) {
+        ApUser user = AppThreadLocalUtil.getUser();
+        if (user == null){
+            return ResponseResult.errorResult(AppHttpCodeEnum.AP_USER_DATA_NOT_EXIST);
+        }
+
+        if (dto.getPageSize() > 20){
+            dto.setPageSize(20);
+        }
+        Criteria condition = Criteria.where("userId").is(user.getId());
+        Query query = Query.query(condition)
+                .with(Sort.by(Sort.Direction.DESC, "createdTime"))
+                .limit(dto.getPageSize());
+
+        List<ApUserSearch> list = mongoTemplate.find(query, ApUserSearch.class);
+
+        return ResponseResult.okResult(list);
+    }
+
+    @Override
+    public ResponseResult delete(DeleteHistoryDto dto) {
+        if (dto == null || dto.getId() == null){
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+        }
+
+        ApUser apUser = AppThreadLocalUtil.getUser();
+        if (apUser == null){
+            return ResponseResult.errorResult(AppHttpCodeEnum.AP_USER_DATA_NOT_EXIST);
+        }
+
+        Criteria condition = Criteria.where("id").is(dto.getId())
+                .and("userId").is(apUser.getId());
+
+        mongoTemplate.remove(Query.query(condition), ApUserSearch.class);
+
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
 
 
