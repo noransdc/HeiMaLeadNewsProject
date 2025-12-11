@@ -1,4 +1,4 @@
-package com.heima.article.config;
+package com.heima.search.config;
 
 
 import lombok.Getter;
