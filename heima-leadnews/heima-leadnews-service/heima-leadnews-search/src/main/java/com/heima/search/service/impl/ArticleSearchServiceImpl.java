@@ -4,7 +4,10 @@ import com.heima.common.constants.ElasticSearchConstant;
 import com.heima.model.search.dto.UserSearchDto;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
+import com.heima.model.user.pojos.ApUser;
+import com.heima.search.pojo.ApUserSearch;
 import com.heima.search.service.ArticleSearchService;
+import com.heima.thread.AppThreadLocalUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
@@ -18,6 +21,11 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -33,6 +41,9 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
 
     @Autowired
     private RestHighLevelClient restHighLevelClient;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
 
     @Override
@@ -52,6 +63,12 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
         if (dto.getMinBehotTime() == null){
             dto.setMinBehotTime(new Date());
         }
+
+        ApUser user = AppThreadLocalUtil.getUser();
+        if (user != null && dto.getPageNum() == 0){
+            insert(dto.getSearchWords(), user.getId());
+        }
+
 
         Date currentDate = new Date();
         log.info("currentDate:{}", currentDate);
@@ -111,6 +128,44 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
         }
 
         return ResponseResult.okResult(mapList);
+    }
+
+    @Override
+    @Async
+    public void insert(String keywords, Integer userId) {
+
+        if (StringUtils.isBlank(keywords)){
+            return;
+        }
+
+        Criteria condition = Criteria.where("keyword").is(keywords).and("userId").is(userId);
+        ApUserSearch cache = mongoTemplate.findOne(Query.query(condition), ApUserSearch.class);
+
+        if (cache != null){
+            cache.setCreatedTime(new Date());
+            mongoTemplate.save(cache);
+            return;
+        }
+
+        ApUserSearch apUserSearch = new ApUserSearch();
+        apUserSearch.setUserId(userId);
+        apUserSearch.setKeyword(keywords);
+        apUserSearch.setCreatedTime(new Date());
+
+        Criteria listCondition = Criteria.where("userId").is(userId);
+        Query listQuery = Query.query(listCondition);
+        listQuery.with(Sort.by(Sort.Direction.DESC, "createTime"));
+        List<ApUserSearch> searchList = mongoTemplate.find(listQuery, ApUserSearch.class);
+
+        if (searchList.size() < 10 ){
+            mongoTemplate.save(apUserSearch);
+
+        } else {
+            ApUserSearch lastItem = searchList.get(searchList.size() - 1);
+            Query lastQuery = Query.query(Criteria.where("id").is(lastItem.getId()));
+            mongoTemplate.findAndReplace(lastQuery, apUserSearch);
+        }
+
     }
 
 
