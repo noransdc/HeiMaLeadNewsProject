@@ -23,7 +23,7 @@ public class ExceptionCatch {
         e.printStackTrace();
         log.error("catch exception:{}",e.getMessage());
 
-        return ResponseResult.errorResult(AppHttpCodeEnum.SERVER_ERROR);
+        return ResponseResult.errorResult(AppHttpCodeEnum.SERVER_ERROR, e.getMessage());
     }
 
     /**

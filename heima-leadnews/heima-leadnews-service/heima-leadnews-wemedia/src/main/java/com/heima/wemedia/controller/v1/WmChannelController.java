@@ -21,7 +21,7 @@ public class WmChannelController {
         return wmChannelService.findAll();
     }
 
-    @GetMapping("del/{id}")
+    @DeleteMapping("del/{id}")
     public ResponseResult delete(@PathVariable Integer id){
         return wmChannelService.delete(id);
     }
