@@ -1,9 +1,13 @@
 package com.heima.user.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
+import com.heima.model.user.dtos.ApUserPageDto;
 import com.heima.model.user.dtos.LoginDto;
 import com.heima.model.user.pojos.ApUser;
 import com.heima.user.mapper.ApUserMapper;
@@ -16,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -64,6 +69,34 @@ public class ApUserServiceImpl extends ServiceImpl<ApUserMapper, ApUser> impleme
             return ResponseResult.okResult(map);
         }
 
-
     }
+
+    @Override
+    public IPage<ApUser> pageList(ApUserPageDto dto) {
+        if (dto.getPage() < 1){
+            dto.setPage(1);
+        }
+
+        if (dto.getSize() < 10){
+            dto.setSize(10);
+        }
+
+        LambdaQueryWrapper<ApUser> query = Wrappers.lambdaQuery();
+        if (dto.getStatus() != null){
+            query.eq(ApUser::getStatus, dto.getStatus());
+        }
+
+        IPage<ApUser> iPage = new Page<>(dto.getPage(), dto.getSize());
+        IPage<ApUser> pageResult = page(iPage, query);
+
+        List<ApUser> userList = pageResult.getRecords();
+
+        for (ApUser user : userList) {
+            user.setStatus(null);
+        }
+
+        return pageResult;
+    }
+
+
 }
