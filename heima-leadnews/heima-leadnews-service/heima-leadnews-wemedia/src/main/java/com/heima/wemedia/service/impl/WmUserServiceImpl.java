@@ -49,4 +49,12 @@ public class WmUserServiceImpl extends ServiceImpl<WmUserMapper, WmUser> impleme
             return ResponseResult.errorResult(AppHttpCodeEnum.LOGIN_PASSWORD_ERROR);
         }
     }
+
+    @Override
+    public WmUser getUser(Integer id) {
+        WmUser user = getById(id);
+        return user;
+    }
+
+
 }

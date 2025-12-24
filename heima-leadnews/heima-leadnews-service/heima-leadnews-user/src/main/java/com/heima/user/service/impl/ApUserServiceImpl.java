@@ -5,20 +5,31 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.heima.apis.wemedia.IWeMediaClient;
+import com.heima.common.exception.CustomException;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
+import com.heima.model.user.dtos.ApFollowDto;
 import com.heima.model.user.dtos.ApUserPageDto;
 import com.heima.model.user.dtos.LoginDto;
 import com.heima.model.user.pojos.ApUser;
+import com.heima.model.user.pojos.ApUserFollow;
+import com.heima.model.wemedia.pojos.WmUser;
+import com.heima.thread.AppThreadLocalUtil;
+import com.heima.user.mapper.ApUserFanMapper;
+import com.heima.user.mapper.ApUserFollowMapper;
 import com.heima.user.mapper.ApUserMapper;
 import com.heima.user.service.ApUserService;
 import com.heima.utils.common.AppJwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +39,18 @@ import java.util.Map;
 @Transactional
 @Slf4j
 public class ApUserServiceImpl extends ServiceImpl<ApUserMapper, ApUser> implements ApUserService {
+
+
+    @Autowired
+    private ApUserFanMapper apUserFanMapper;
+
+    @Autowired
+    private ApUserFollowMapper apUserFollowMapper;
+
+    @Autowired
+    private IWeMediaClient weMediaClient;
+
+
     /**
      * app端登录功能
      * @param dto
@@ -96,6 +119,57 @@ public class ApUserServiceImpl extends ServiceImpl<ApUserMapper, ApUser> impleme
         }
 
         return pageResult;
+    }
+
+    @Override
+    @Transactional
+    public void follow(ApFollowDto dto) {
+        if (dto.getAuthorId() == null || dto.getOperation() == null){
+            throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
+        }
+
+        if (dto.getOperation() != 0 && dto.getOperation() != 1){
+            throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
+        }
+
+        ApUser user = AppThreadLocalUtil.getUser();
+        if (user == null){
+            throw new CustomException(AppHttpCodeEnum.AP_USER_DATA_NOT_EXIST);
+        }
+
+        if ((long)user.getId() == dto.getAuthorId()){
+            throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
+        }
+
+        WmUser author = weMediaClient.getUser(dto.getAuthorId());
+
+        if (author == null){
+            throw new CustomException(AppHttpCodeEnum.DATA_NOT_EXIST);
+        }
+
+        if (dto.getOperation() == 1){
+            ApUserFollow apUserFollow = new ApUserFollow();
+            apUserFollow.setUserId(user.getId());
+            apUserFollow.setFollowId(author.getId());
+            apUserFollow.setFollowName(author.getName());
+            apUserFollow.setLevel(1);
+            apUserFollow.setIsNotice(1);
+            apUserFollow.setCreatedTime(new Date());
+
+            try {
+                apUserFollowMapper.insert(apUserFollow);
+
+            } catch (DuplicateKeyException e){
+                // 已关注，幂等成功，什么都不做
+            }
+
+        } else {
+            LambdaQueryWrapper<ApUserFollow> query = Wrappers.lambdaQuery();
+            query.eq(ApUserFollow::getUserId, user.getId())
+                            .eq(ApUserFollow::getFollowId, dto.getAuthorId());
+            apUserFollowMapper.delete(query);
+        }
+
     }
 
 

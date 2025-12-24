@@ -45,4 +45,15 @@ public enum AppHttpCodeEnum {
     public String getErrorMessage() {
         return errorMessage;
     }
+
+    public static AppHttpCodeEnum codeOf(int code){
+        for (AppHttpCodeEnum value : values()) {
+            if (value.getCode() == code){
+                return value;
+            }
+        }
+        return SERVER_ERROR;
+    }
+
+
 }
