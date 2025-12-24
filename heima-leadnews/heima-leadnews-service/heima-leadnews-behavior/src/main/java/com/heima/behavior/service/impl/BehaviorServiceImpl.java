@@ -67,7 +67,7 @@ public class BehaviorServiceImpl implements BehaviorService {
 
     @Override
     public void dislike(DislikeBehaviorDto dto) {
-        if (dto.getArticleId() == null){
+        if (dto.getArticleId() == null || dto.getType() == null){
             throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
         }
 
