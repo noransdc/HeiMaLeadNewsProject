@@ -25,7 +25,7 @@ public class ArticleHomeController {
     @ApiOperation("获取最新文章列表")
     @PostMapping({"/load", "/load/"})
     public ResponseResult load(@RequestBody ArticleHomeDto dto){
-        return apArticleService.load(dto, ArticleConstants.LOADTYPE_LOAD_MORE);
+        return apArticleService.load2(dto, ArticleConstants.LOADTYPE_LOAD_MORE, true);
     }
 
     @PostMapping("/loadmore")

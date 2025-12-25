@@ -8,11 +8,13 @@ import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.wemedia.dtos.WmChannelUpdateDto;
 import com.heima.model.wemedia.pojos.WmChannel;
 
+import java.util.List;
+
 
 public interface WmChannelService extends IService<WmChannel> {
 
 
-    ResponseResult findAll();
+    List<WmChannel> findAll();
 
     ResponseResult pageList(WmChannelPageReqDto dto);
 

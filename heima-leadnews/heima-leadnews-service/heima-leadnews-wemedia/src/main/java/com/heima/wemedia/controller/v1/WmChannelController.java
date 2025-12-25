@@ -9,6 +9,8 @@ import com.heima.wemedia.service.WmChannelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/channel")
 public class WmChannelController {
@@ -18,7 +20,7 @@ public class WmChannelController {
 
     @GetMapping("/channels")
     public ResponseResult findAll(){
-        return wmChannelService.findAll();
+        return ResponseResult.okResult(wmChannelService.findAll());
     }
 
     @DeleteMapping("del/{id}")

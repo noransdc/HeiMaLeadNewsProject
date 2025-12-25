@@ -3,6 +3,7 @@ package com.heima.article.test;
 
 import com.alibaba.fastjson.JSON;
 import com.heima.article.mapper.ApArticleMapper;
+import com.heima.article.service.ApArticleService;
 import com.heima.common.constants.ElasticSearchConstant;
 import com.heima.model.search.vo.SearchArticleVo;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -28,6 +29,9 @@ public class ApArticleTest {
     @Autowired
     private RestHighLevelClient restHighLevelClient;
 
+    @Autowired
+    private ApArticleService apArticleService;
+
     @Test
     public void init() throws Exception{
         BulkRequest bulkRequest = new BulkRequest(ElasticSearchConstant.APP_INFO_ARTICLE);
@@ -45,5 +49,9 @@ public class ApArticleTest {
         restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
     }
 
+    @Test
+    public void testCalculateScore(){
+        apArticleService.calculateArticleScore();
+    }
 
 }

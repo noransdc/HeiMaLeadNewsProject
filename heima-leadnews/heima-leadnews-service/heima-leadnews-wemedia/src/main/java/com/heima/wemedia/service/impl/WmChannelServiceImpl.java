@@ -31,14 +31,14 @@ public class WmChannelServiceImpl extends ServiceImpl<WmChannelMapper, WmChannel
     private WmChannelMapper wmChannelMapper;
 
     @Override
-    public ResponseResult findAll() {
+    public List<WmChannel> findAll() {
 
         List<WmChannel> list = lambdaQuery()
                 .eq(WmChannel::getStatus, 1)
                 .orderByAsc(WmChannel::getOrd)
                 .list();
 
-        return ResponseResult.okResult(list);
+        return list;
     }
 
 
