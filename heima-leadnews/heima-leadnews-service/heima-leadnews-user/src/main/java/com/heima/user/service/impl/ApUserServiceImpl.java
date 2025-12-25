@@ -9,18 +9,22 @@ import com.heima.apis.wemedia.IWeMediaClient;
 import com.heima.common.exception.CustomException;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
+import com.heima.model.user.dtos.ApCollectionDto;
 import com.heima.model.user.dtos.ApFollowDto;
 import com.heima.model.user.dtos.ApUserPageDto;
 import com.heima.model.user.dtos.LoginDto;
 import com.heima.model.user.pojos.ApUser;
+import com.heima.model.user.pojos.ApUserCollection;
 import com.heima.model.user.pojos.ApUserFollow;
 import com.heima.model.wemedia.pojos.WmUser;
 import com.heima.thread.AppThreadLocalUtil;
+import com.heima.user.mapper.ApUserCollectionMapper;
 import com.heima.user.mapper.ApUserFanMapper;
 import com.heima.user.mapper.ApUserFollowMapper;
 import com.heima.user.mapper.ApUserMapper;
 import com.heima.user.service.ApUserService;
 import com.heima.utils.common.AppJwtUtil;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +53,9 @@ public class ApUserServiceImpl extends ServiceImpl<ApUserMapper, ApUser> impleme
 
     @Autowired
     private IWeMediaClient weMediaClient;
+
+    @Autowired
+    private ApUserCollectionMapper apUserCollectionMapper;
 
 
     /**
@@ -169,6 +176,48 @@ public class ApUserServiceImpl extends ServiceImpl<ApUserMapper, ApUser> impleme
                             .eq(ApUserFollow::getFollowId, dto.getAuthorId());
             apUserFollowMapper.delete(query);
         }
+
+    }
+
+    @Override
+    public void collection(ApCollectionDto dto) {
+        Long articleId = dto.getEntryId();
+        Integer operation = dto.getOperation();
+
+        if (articleId == null || operation == null){
+            throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
+        }
+
+        if (operation != 0 && operation != 1){
+            throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
+        }
+
+        ApUser apUser = AppThreadLocalUtil.getUser();
+        if (apUser == null){
+            throw new CustomException(AppHttpCodeEnum.AP_USER_DATA_NOT_EXIST);
+        }
+        Integer userId = apUser.getId();
+
+        if (operation == 1){
+            ApUserCollection apUserCollection = new ApUserCollection();
+            apUserCollection.setUserId((long)userId);
+            apUserCollection.setArticleId(articleId);
+            apUserCollection.setCreatedTime(new Date());
+
+            try {
+                apUserCollectionMapper.insert(apUserCollection);
+
+            } catch (DuplicateKeyException e){
+                //已收藏，幂等成功
+            }
+
+        } else {
+            LambdaQueryWrapper<ApUserCollection> query = Wrappers.lambdaQuery();
+            query.eq(ApUserCollection::getUserId, userId)
+                    .eq(ApUserCollection::getArticleId, articleId);
+            apUserCollectionMapper.delete(query);
+        }
+
 
     }
 

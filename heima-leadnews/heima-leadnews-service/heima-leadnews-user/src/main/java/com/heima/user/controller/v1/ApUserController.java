@@ -3,6 +3,7 @@ package com.heima.user.controller.v1;
 
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
+import com.heima.model.user.dtos.ApCollectionDto;
 import com.heima.model.user.dtos.ApFollowDto;
 import com.heima.user.service.ApUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,12 @@ public class ApUserController {
     @PostMapping("/user_follow")
     public ResponseResult follow(@RequestBody ApFollowDto dto){
         apUserService.follow(dto);
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+    }
+
+    @PostMapping("/collection_behavior")
+    public ResponseResult collection(@RequestBody ApCollectionDto dto){
+        apUserService.collection(dto);
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
 
