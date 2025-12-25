@@ -1,3 +1,6 @@
+
+-- USE leadnews_user; 如果建表时未指定库名，则可以切换到该库
+
 CREATE TABLE leadnews_user.ap_user_collection
 (
     id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键',
