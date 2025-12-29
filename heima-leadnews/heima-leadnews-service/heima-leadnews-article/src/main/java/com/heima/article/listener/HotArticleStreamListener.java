@@ -6,6 +6,7 @@ import com.heima.common.constants.HotArticleConstants;
 import com.heima.model.article.pojos.ArticleVisitStreamMsg;
 import com.heima.model.article.pojos.UpdateArticleMsg;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.*;
@@ -25,15 +26,33 @@ public class HotArticleStreamListener {
         KStream<String, String> kStream = streamsBuilder.stream(HotArticleConstants.HOT_ARTICLE_SCORE_TOPIC);
 
         kStream.map((key, value) -> {
-                    log.info("map start key:{}", key);
-                    log.info("map start value:{}", value);
+                    log.debug("map start key={}, value={}", key, value);
 
-                    UpdateArticleMsg msg = JSON.parseObject(value, UpdateArticleMsg.class);
+                    if (StringUtils.isBlank(value)){
+                        log.warn("drop message: blank value");
+                        return null;
+                    }
+
+                    UpdateArticleMsg msg;
+
+                    try {
+                        msg = JSON.parseObject(value, UpdateArticleMsg.class);
+
+                    } catch (Exception e){
+                        log.error("drop message: json parse error, value={}", value, e);
+                        return null;
+                    }
+
+                    if (msg.getArticleId() == null || msg.getType() == null || msg.getAdd() == null){
+                        log.warn("drop message: invalid msg={}", msg);
+                        return null;
+                    }
 
                     //key="1994038386045882369", value=LIKES:1
                     return new KeyValue<>(msg.getArticleId().toString(), msg.getType().name() + ":" + msg.getAdd());
 
                 })
+                .filter((k,v)-> v!=null)
                 .groupBy((key, value) -> {
 
                     log.info("groupBy key:{}", key);
@@ -60,9 +79,17 @@ public class HotArticleStreamListener {
                         int commentNum = 0;
                         int collectionNum = 0;
 
-                        String[] initArr = aggValue.split(",");
-                        for (String arr : initArr) {
+                        String[] aggArr = aggValue.split(",");
+                        if (aggArr.length != 4){
+                            log.warn("drop message: invalid aggValue={}", aggValue);
+                            return aggValue;
+                        }
+
+                        for (String arr : aggArr) {
                             String[] split = arr.split(":");
+                            if (split.length != 2){
+                                continue;
+                            }
                             String splitKey = split[0];
                             String splitValue = split[1];
                             UpdateArticleMsg.UpdateArticleType typeEnum = UpdateArticleMsg.UpdateArticleType.valueOf(splitKey);
@@ -89,6 +116,9 @@ public class HotArticleStreamListener {
                         }
 
                         String[] eventArr = value.split(":");
+                        if (eventArr.length != 2){
+                            return aggValue;
+                        }
                         String eventKey = eventArr[0];
                         String eventValue = eventArr[1];
                         UpdateArticleMsg.UpdateArticleType eventTypeEnum = UpdateArticleMsg.UpdateArticleType.valueOf(eventKey);
@@ -113,7 +143,6 @@ public class HotArticleStreamListener {
                                 break;
                         }
 
-
                         String formatStr = String.format("COLLECTION:%d,COMMENT:%d,LIKES:%d,VIEWS:%d",
                                 collectionNum, commentNum, likeNum, viewNum);
 
@@ -123,11 +152,23 @@ public class HotArticleStreamListener {
                     }
                 }, Materialized.as("hot-atricle-stream-count-001"))
                 .toStream()
-                .map((key, value) -> {
-                    log.info("map end key:{}", key);
+                .map((windowedKey, value) -> {
+
                     log.info("map end value:{}", value);
-                    String json = JSON.toJSONString(packObject(value));
-                    return new KeyValue<>(key.key(), json);
+
+                    String articleId = windowedKey.key();
+                    log.info("map end articleId:{}", articleId);
+
+                    //kafka stream 时间窗口开始时间
+                    long windowStart = windowedKey.window().start();
+                    log.info("map end windowStart:{}", windowStart);
+
+                    //kafka stream 时间窗口结束时间
+                    long windowEnd = windowedKey.window().end();
+                    log.info("map end windowEnd:{}", windowEnd);
+
+                    String json = JSON.toJSONString(packObject(value, windowEnd));
+                    return new KeyValue<>(articleId, json);
                 })
                 .to(HotArticleConstants.HOT_ARTICLE_INCR_HANDLE_TOPIC);
 
@@ -135,8 +176,10 @@ public class HotArticleStreamListener {
         return kStream;
     }
 
-    private ArticleVisitStreamMsg packObject(String value) {
+    private ArticleVisitStreamMsg packObject(String value, long windowEnd) {
         ArticleVisitStreamMsg msg = new ArticleVisitStreamMsg();
+        msg.setWindowEnd(windowEnd);
+
         String[] initArr = value.split(",");
         for (String arr : initArr) {
             String[] split = arr.split(":");

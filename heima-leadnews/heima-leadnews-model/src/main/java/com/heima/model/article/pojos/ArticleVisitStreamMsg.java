@@ -25,4 +25,8 @@ public class ArticleVisitStreamMsg {
      * 点赞
      */
     private int like;
+
+    //kafka stream 时间窗口结束时间
+    private long windowEnd;
+
 }

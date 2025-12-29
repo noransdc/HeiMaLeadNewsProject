@@ -26,12 +26,12 @@ public class ComputeHotArticleJob {
     public void handle(){
         log.info("xxl job calculateArticleScore pre");
 
-
-        UpdateArticleMsg msg = new UpdateArticleMsg();
-        msg.setArticleId(1994038386045882369L);
-        msg.setType(UpdateArticleMsg.UpdateArticleType.LIKES);
-        msg.setAdd(1);
-        kafkaTemplate.send(HotArticleConstants.HOT_ARTICLE_SCORE_TOPIC, JSON.toJSONString(msg));
+        //测试代码
+//        UpdateArticleMsg msg = new UpdateArticleMsg();
+//        msg.setArticleId(1994038386045882369L);
+//        msg.setType(UpdateArticleMsg.UpdateArticleType.LIKES);
+//        msg.setAdd(1);
+//        kafkaTemplate.send(HotArticleConstants.HOT_ARTICLE_SCORE_TOPIC, JSON.toJSONString(msg));
 
         apArticleService.calculateArticleScore();
         log.info("xxl job calculateArticleScore after");
