@@ -113,3 +113,24 @@ create table article_interaction
   default charset = utf8mb4
   collate = utf8mb4_unicode_ci
     comment ='文章交互统计表';
+
+
+-- v1.0 initial article channel
+create table article_channel
+(
+    id          bigint unsigned   not null auto_increment comment '主键id',
+    name        varchar(10)       not null comment '频道名称',
+    description varchar(100) comment '频道描述',
+    is_default  tinyint unsigned  not null default 0 comment '是否默认频道',
+    is_enabled  tinyint unsigned  not null default 1 comment '是否可用',
+    sort        smallint unsigned not null default 0 comment '排序',
+    create_time datetime          not null default current_timestamp comment '创建时间',
+    update_time datetime          not null default current_timestamp
+        on update current_timestamp comment '更新时间',
+
+    primary key (id)
+
+) engine = InnoDB
+  default charset = utf8mb4
+  collate = utf8mb4_unicode_ci
+    comment = '文章频道表';
