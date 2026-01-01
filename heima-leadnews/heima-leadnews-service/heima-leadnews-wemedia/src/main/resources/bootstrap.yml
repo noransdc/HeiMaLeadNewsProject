@@ -1,5 +1,6 @@
 server:
   port: 51803
+
 spring:
   application:
     name: leadnews-wemedia
@@ -10,6 +11,10 @@ spring:
       config:
         server-addr: 192.168.238.101:8848
         file-extension: yml
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
 
 
 tess4j:

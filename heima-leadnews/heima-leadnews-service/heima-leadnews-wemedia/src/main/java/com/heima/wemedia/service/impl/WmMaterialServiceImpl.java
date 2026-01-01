@@ -4,9 +4,9 @@ package com.heima.wemedia.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.heima.common.exception.CustomException;
 import com.heima.file.service.FileStorageService;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.common.dtos.ResponseResult;
@@ -15,13 +15,17 @@ import com.heima.model.wemedia.dtos.WmMaterialDto;
 import com.heima.model.wemedia.pojos.WmMaterial;
 import com.heima.model.wemedia.pojos.WmUser;
 import com.heima.thread.WmThreadLocalUtil;
+import com.heima.utils.common.ImgUtil;
 import com.heima.wemedia.mapper.WmMaterialMapper;
 import com.heima.wemedia.service.WmMaterialService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
 
@@ -30,43 +34,48 @@ import java.util.UUID;
 @Slf4j
 public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMaterial> implements WmMaterialService {
 
+    private static final long MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+
 
     @Autowired
     private FileStorageService fileStorageService;
 
 
     @Override
-    public ResponseResult uploadPicture(MultipartFile multipartFile) {
-        if (multipartFile == null || multipartFile.getSize() == 0){
-            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+    public WmMaterial uploadPicture(MultipartFile multipartFile) {
+        if (multipartFile == null || multipartFile.isEmpty()){
+            throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
         }
 
-        String originalFilename = multipartFile.getOriginalFilename();
-        if (StringUtils.isBlank(originalFilename)){
-            originalFilename = "file.jpg";
-        }
-        String suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
-        String uuid = UUID.randomUUID().toString().replace("-", "");
-        String filename = uuid + suffix;
-
-        String url = null;
-        try {
-            url = fileStorageService.uploadImgFile("", filename, multipartFile.getInputStream());
-            log.info("上传图片到minIO中，url:{}", url);
-
-        } catch (Exception e){
-            log.error("WmMaterialServiceImpl 上传图片失败");
-            e.printStackTrace();
+        if (multipartFile.getSize() > MAX_IMAGE_SIZE){
+            throw new CustomException(AppHttpCodeEnum.FILE_TOO_LARGE);
         }
 
         WmUser wmUser = WmThreadLocalUtil.getUser();
-        Integer userId = null;
-        if (wmUser != null){
-            userId = wmUser.getId();
+        if (wmUser == null){
+            throw new CustomException(AppHttpCodeEnum.AP_USER_DATA_NOT_EXIST);
+        }
+
+        String url = "";
+
+        try{
+            byte[] bytes = multipartFile.getBytes();
+
+            String suffix = "." + ImgUtil.detect(new ByteArrayInputStream(bytes));
+            String uuid = UUID.randomUUID().toString().replace("-", "");
+            String filename = uuid + suffix;
+            url = fileStorageService.uploadImgFile(suffix, filename, new ByteArrayInputStream(bytes));
+
+        } catch (IOException e){
+            throw new CustomException(AppHttpCodeEnum.READ_FILE_FAILED);
+        }
+
+        if (StringUtils.isBlank(url)){
+            throw new CustomException(AppHttpCodeEnum.SAVE_FILE_FAILED);
         }
 
         WmMaterial wmMaterial = new WmMaterial();
-        wmMaterial.setUserId(userId);
+        wmMaterial.setUserId(wmUser.getId());
         wmMaterial.setUrl(url);
         wmMaterial.setType((short)0);
         wmMaterial.setIsCollection((short)0);
@@ -74,7 +83,7 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
 
         save(wmMaterial);
 
-        return ResponseResult.okResult(wmMaterial);
+        return wmMaterial;
     }
 
     @Override

@@ -134,3 +134,26 @@ create table article_channel
   default charset = utf8mb4
   collate = utf8mb4_unicode_ci
     comment = '文章频道表';
+
+
+-- V1.0 initial author material
+create table author_material
+(
+    id          bigint unsigned  not null auto_increment comment '主键id',
+    author_id   bigint unsigned  not null comment '作者id',
+    url         varchar(255)     not null comment '图片链接',
+    is_collect  tinyint unsigned not null default 0 comment '是否收藏, 0未收藏，1已收藏',
+    is_delete   tinyint unsigned not null default 0 comment '是否删除，0未删除，1删除',
+    delete_time datetime                  default null comment '删除时间',
+    create_time datetime         not null default current_timestamp comment '创建时间',
+    update_time datetime         not null default current_timestamp
+        on update current_timestamp comment '更新时间',
+
+    primary key (id),
+    key indx_author_id (author_id)
+
+
+) engine = InnoDB
+  default charset = utf8mb4
+  collate = utf8mb4_unicode_ci
+    comment ='作者个人素材表';

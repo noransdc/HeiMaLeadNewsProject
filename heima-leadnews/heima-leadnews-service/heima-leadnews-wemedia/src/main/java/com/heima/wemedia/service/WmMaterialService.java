@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface WmMaterialService extends IService<WmMaterial> {
 
-    ResponseResult uploadPicture(MultipartFile multipartFile);
+    WmMaterial uploadPicture(MultipartFile multipartFile);
 
     ResponseResult findList(WmMaterialDto dto);
 

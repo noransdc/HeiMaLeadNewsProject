@@ -27,7 +27,12 @@ public enum AppHttpCodeEnum {
     NO_OPERATOR_AUTH(3000,"无权限操作"),
     NEED_ADMIND(3001,"需要管理员权限"),
 
-    MATERIAL_REFERENCE_FAIL(4001,"素材不存在");
+    MATERIAL_REFERENCE_FAIL(4001,"素材不存在"),
+
+    SAVE_FILE_FAILED(4003,"文件保存失败"),
+    FILE_TOO_LARGE(4004,"文件过大"),
+
+    READ_FILE_FAILED(4002, "读取文件失败");
 
 
     int code;
