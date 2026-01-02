@@ -7,10 +7,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.heima.apis.articlecore.ArticleCoreClient;
 import com.heima.common.constants.WeMediaConstants;
 import com.heima.common.constants.WmNewsMessageConstants;
 import com.heima.common.exception.CustomException;
 import com.heima.model.article.pojos.ApArticleEnable;
+import com.heima.model.articlecore.dto.ArticleSubmitDto;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
@@ -18,6 +20,7 @@ import com.heima.model.wemedia.dtos.*;
 import com.heima.model.wemedia.pojos.WmMaterial;
 import com.heima.model.wemedia.pojos.WmNews;
 import com.heima.model.wemedia.pojos.WmNewsMaterial;
+import com.heima.model.wemedia.pojos.WmUser;
 import com.heima.model.wemedia.vo.WmNewsListVo;
 import com.heima.thread.WmThreadLocalUtil;
 import com.heima.wemedia.mapper.WmMaterialMapper;
@@ -36,7 +39,6 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nonnull;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 
@@ -58,6 +60,10 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
+
+    @Autowired
+    private ArticleCoreClient articleCoreClient;
+
 
     @Override
     public ResponseResult findOne(Integer id) {
@@ -320,6 +326,47 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
         wmNews.setStatus(WmNews.Status.SUCCESS.getCode());
 
         updateById(wmNews);
+    }
+
+
+    @Override
+    public void postSaveNews(WmNewsDto dto) {
+        if (dto == null){
+            throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
+        }
+
+        WmUser wmUser = WmThreadLocalUtil.getUser();
+        if (wmUser == null){
+            throw new CustomException(AppHttpCodeEnum.USER_NOT_EXIST);
+        }
+
+        String title = dto.getTitle();
+        String content = dto.getContent();
+        Integer channelId = dto.getChannelId();
+        Short draftStatus = dto.getStatus();
+        Short coverType = dto.getType();
+
+        if (StringUtils.isBlank(title) || StringUtils.isBlank(content) || channelId == null || draftStatus == null || coverType == null){
+            throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
+        }
+
+        ArticleSubmitDto articleSubmitDto = new ArticleSubmitDto();
+        articleSubmitDto.setTitle(dto.getTitle());
+        articleSubmitDto.setContent(dto.getContent());
+        articleSubmitDto.setChannelId((long)channelId);
+        articleSubmitDto.setAuthorId((long) wmUser.getId());
+        articleSubmitDto.setPublishTime(dto.getPublishTime());
+        articleSubmitDto.setImages(dto.getImages());
+        articleSubmitDto.setLabel(dto.getLabels());
+        articleSubmitDto.setCoverType((int)coverType);
+
+        if (draftStatus == 0){
+            articleSubmitDto.setIsDraft(1);
+        } else {
+            articleSubmitDto.setIsDraft(0);
+        }
+
+        articleCoreClient.submit(articleSubmitDto);
     }
 
 

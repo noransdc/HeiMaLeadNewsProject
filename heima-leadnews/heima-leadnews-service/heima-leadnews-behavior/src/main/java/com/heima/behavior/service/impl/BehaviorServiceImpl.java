@@ -8,8 +8,6 @@ import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.user.pojos.ApUser;
 import com.heima.thread.AppThreadLocalUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.checkerframework.checker.signature.qual.PolySignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -33,7 +31,7 @@ public class BehaviorServiceImpl implements BehaviorService {
 
         ApUser user = AppThreadLocalUtil.getUser();
         if (user == null){
-            throw new CustomException(AppHttpCodeEnum.AP_USER_DATA_NOT_EXIST);
+            throw new CustomException(AppHttpCodeEnum.USER_NOT_EXIST);
         }
 
 
@@ -73,7 +71,7 @@ public class BehaviorServiceImpl implements BehaviorService {
 
         ApUser user = AppThreadLocalUtil.getUser();
         if (user == null){
-            throw new CustomException(AppHttpCodeEnum.AP_USER_DATA_NOT_EXIST);
+            throw new CustomException(AppHttpCodeEnum.USER_NOT_EXIST);
         }
 
         String key = "dislike:article:" + dto.getArticleId();
@@ -95,7 +93,7 @@ public class BehaviorServiceImpl implements BehaviorService {
 
         ApUser user = AppThreadLocalUtil.getUser();
         if (user == null){
-            throw new CustomException(AppHttpCodeEnum.AP_USER_DATA_NOT_EXIST);
+            throw new CustomException(AppHttpCodeEnum.USER_NOT_EXIST);
         }
 
         String key = "read:article:" + dto.getArticleId();

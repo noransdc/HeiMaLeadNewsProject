@@ -5,6 +5,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.heima.apis.articlecore.ArticleCoreClient;
+import com.heima.model.articlecore.entity.ArticleChannel;
+import com.heima.model.articlecore.vo.ChannelVo;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.wemedia.dtos.WmChannelAddDto;
 import com.heima.model.wemedia.dtos.WmChannelPageReqDto;
@@ -20,6 +23,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -29,6 +33,9 @@ public class WmChannelServiceImpl extends ServiceImpl<WmChannelMapper, WmChannel
 
     @Autowired
     private WmChannelMapper wmChannelMapper;
+
+    @Autowired
+    private ArticleCoreClient articleCoreClient;
 
     @Override
     public List<WmChannel> findAll() {
@@ -41,6 +48,19 @@ public class WmChannelServiceImpl extends ServiceImpl<WmChannelMapper, WmChannel
         return list;
     }
 
+    @Override
+    public List<ChannelVo> getChannelList() {
+        List<ArticleChannel> channelList = articleCoreClient.getChannelList();
+        List<ChannelVo> channelVoList = new ArrayList<>();
+        for (ArticleChannel channel : channelList) {
+            ChannelVo channelVo = new ChannelVo();
+            BeanUtils.copyProperties(channel, channelVo);
+            channelVo.setOrd(channel.getSort());
+            channelVoList.add(channelVo);
+        }
+
+        return channelVoList;
+    }
 
     @Override
     public ResponseResult pageList(WmChannelPageReqDto dto) {

@@ -34,7 +34,7 @@ public class AdminUserServiceImpl extends ServiceImpl<AdminUserMapper, AdminUser
                 .one();
 
         if (user == null ){
-            return ResponseResult.errorResult(AppHttpCodeEnum.AP_USER_DATA_NOT_EXIST);
+            return ResponseResult.errorResult(AppHttpCodeEnum.USER_NOT_EXIST);
         }
 
         String pwdMd5 = DigestUtils.md5DigestAsHex((password + user.getSalt()).getBytes());

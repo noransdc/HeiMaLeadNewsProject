@@ -172,7 +172,7 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
     public ResponseResult load(LoadHistoryDto dto) {
         ApUser user = AppThreadLocalUtil.getUser();
         if (user == null){
-            return ResponseResult.errorResult(AppHttpCodeEnum.AP_USER_DATA_NOT_EXIST);
+            return ResponseResult.errorResult(AppHttpCodeEnum.USER_NOT_EXIST);
         }
 
         if (dto.getPageSize() > 20){
@@ -196,7 +196,7 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
 
         ApUser apUser = AppThreadLocalUtil.getUser();
         if (apUser == null){
-            return ResponseResult.errorResult(AppHttpCodeEnum.AP_USER_DATA_NOT_EXIST);
+            return ResponseResult.errorResult(AppHttpCodeEnum.USER_NOT_EXIST);
         }
 
         Criteria condition = Criteria.where("id").is(dto.getId())

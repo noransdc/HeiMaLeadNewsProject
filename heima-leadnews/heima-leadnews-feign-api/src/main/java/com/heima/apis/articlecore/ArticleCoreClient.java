@@ -1,0 +1,24 @@
+package com.heima.apis.articlecore;
+
+
+import com.heima.model.articlecore.dto.ArticleSubmitDto;
+import com.heima.model.articlecore.entity.ArticleChannel;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import java.util.List;
+
+
+@FeignClient(value = "leadnews-article-core")
+public interface ArticleCoreClient {
+
+    @PostMapping("/internal/article/add")
+    void submit(@RequestBody ArticleSubmitDto dto);
+
+    @GetMapping("/internal/article/channel/list")
+    List<ArticleChannel> getChannelList();
+
+
+}

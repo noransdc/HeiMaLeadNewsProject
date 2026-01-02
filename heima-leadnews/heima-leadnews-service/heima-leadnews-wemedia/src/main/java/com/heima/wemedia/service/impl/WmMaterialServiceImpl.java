@@ -2,7 +2,6 @@ package com.heima.wemedia.service.impl;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -53,7 +52,7 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
 
         WmUser wmUser = WmThreadLocalUtil.getUser();
         if (wmUser == null){
-            throw new CustomException(AppHttpCodeEnum.AP_USER_DATA_NOT_EXIST);
+            throw new CustomException(AppHttpCodeEnum.USER_NOT_EXIST);
         }
 
         String url = "";

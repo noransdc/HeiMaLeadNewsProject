@@ -1,5 +1,5 @@
 server:
-  port: 51807
+  port: 51808
 
 spring:
   application:
@@ -9,8 +9,8 @@ spring:
       discovery:
         server-addr: 192.168.238.101:8848
       config:
-        file-extension: yml
         server-addr: 192.168.238.101:8848
+        file-extension: yml
 
 
 

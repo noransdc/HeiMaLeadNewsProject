@@ -72,26 +72,15 @@ alter table article
 -- v1.0: initial article content table
 create table article_content
 (
-    id         bigint unsigned not null auto_increment comment '主键id',
     article_id bigint unsigned not null comment '文章id',
     content    mediumtext comment '文章内容',
 
-    primary key (id),
-    unique key uk_article_id (article_id)
+    primary key (article_id)
 
 ) engine = InnoDB
   default charset = utf8mb4
   collate = utf8mb4_unicode_ci
     comment = '文章内容表';
-
--- v1.1: delete the column id, set the article id as primary key
-alter table article_content
-    drop primary key,
-    drop column id;
-
-alter table article_content
-    add primary key (article_id),
-    drop index uk_article_id;
 
 
 -- v1.0: initial article interaction

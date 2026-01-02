@@ -2,6 +2,7 @@ package com.heima.wemedia.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.heima.model.articlecore.vo.ChannelVo;
 import com.heima.model.wemedia.dtos.WmChannelAddDto;
 import com.heima.model.wemedia.dtos.WmChannelPageReqDto;
 import com.heima.model.common.dtos.ResponseResult;
@@ -23,6 +24,8 @@ public interface WmChannelService extends IService<WmChannel> {
     ResponseResult update(WmChannelUpdateDto dto);
 
     ResponseResult delete(Integer id);
+
+    List<ChannelVo> getChannelList();
 
 
 }

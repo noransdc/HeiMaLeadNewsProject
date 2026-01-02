@@ -28,4 +28,6 @@ public interface WmNewsService extends IService<WmNews> {
 
     void authPass(WmNewsAuthPassDto dto);
 
+    void postSaveNews(WmNewsDto dto);
+
 }

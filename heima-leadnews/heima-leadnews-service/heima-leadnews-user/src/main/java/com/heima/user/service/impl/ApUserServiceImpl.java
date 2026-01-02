@@ -24,7 +24,6 @@ import com.heima.user.mapper.ApUserFollowMapper;
 import com.heima.user.mapper.ApUserMapper;
 import com.heima.user.service.ApUserService;
 import com.heima.utils.common.AppJwtUtil;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -141,7 +140,7 @@ public class ApUserServiceImpl extends ServiceImpl<ApUserMapper, ApUser> impleme
 
         ApUser user = AppThreadLocalUtil.getUser();
         if (user == null){
-            throw new CustomException(AppHttpCodeEnum.AP_USER_DATA_NOT_EXIST);
+            throw new CustomException(AppHttpCodeEnum.USER_NOT_EXIST);
         }
 
         if ((long)user.getId() == dto.getAuthorId()){
@@ -194,7 +193,7 @@ public class ApUserServiceImpl extends ServiceImpl<ApUserMapper, ApUser> impleme
 
         ApUser apUser = AppThreadLocalUtil.getUser();
         if (apUser == null){
-            throw new CustomException(AppHttpCodeEnum.AP_USER_DATA_NOT_EXIST);
+            throw new CustomException(AppHttpCodeEnum.USER_NOT_EXIST);
         }
         Integer userId = apUser.getId();
 

@@ -32,6 +32,7 @@ public class Article {
     @TableField("label")
     private String label;
 
+    //审核状态：0草稿，1已提交，2自动审核失败，3人工审核失败，8审核成功，9已发布
     @TableField("audit_status")
     private Integer auditStatus;
 

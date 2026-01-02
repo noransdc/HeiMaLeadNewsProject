@@ -20,7 +20,7 @@ public class WmChannelController {
 
     @GetMapping("/channels")
     public ResponseResult findAll(){
-        return ResponseResult.okResult(wmChannelService.findAll());
+        return ResponseResult.okResult(wmChannelService.getChannelList());
     }
 
     @DeleteMapping("del/{id}")

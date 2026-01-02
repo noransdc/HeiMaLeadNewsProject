@@ -26,7 +26,9 @@ public class WmNewsController {
 
     @PostMapping("/submit")
     public ResponseResult submitNews(@RequestBody WmNewsDto dto){
-        return wmNewsService.submitNews(dto);
+//        return wmNewsService.submitNews(dto);
+        wmNewsService.postSaveNews(dto);
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
 
     @GetMapping("/one/{id}")

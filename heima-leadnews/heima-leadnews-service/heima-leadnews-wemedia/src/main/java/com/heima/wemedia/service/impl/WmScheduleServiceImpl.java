@@ -49,7 +49,7 @@ public class WmScheduleServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> imp
     }
 
 
-    @Scheduled(cron = "*/10 * * * * ?")
+    @Scheduled(cron = "*/30 * * * * ?")
     public void pollTask(){
         Integer type = TaskTypeEnum.NEWS_SCAN_TIME.getTaskType();
         Integer priority = TaskTypeEnum.NEWS_SCAN_TIME.getPriority();
