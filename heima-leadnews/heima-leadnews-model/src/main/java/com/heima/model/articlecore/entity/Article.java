@@ -26,6 +26,9 @@ public class Article {
     @TableField("cover_img_url")
     private String coverImgUrl;
 
+    @TableField("cover_type")
+    private Integer coverType;
+
     @TableField("channel_id")
     private Long channelId;
 

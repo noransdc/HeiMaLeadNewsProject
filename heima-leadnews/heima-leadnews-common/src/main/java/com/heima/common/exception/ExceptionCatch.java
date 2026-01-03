@@ -4,6 +4,7 @@ package com.heima.common.exception;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -32,7 +33,11 @@ public class ExceptionCatch {
     @ExceptionHandler(CustomException.class)
     public ResponseResult exception(CustomException e){
         log.error("catch exception:{}",e);
-        return ResponseResult.errorResult(e.getAppHttpCodeEnum());
+        String errorMsg = e.getErrorMsg();
+        if (StringUtils.isBlank(errorMsg)){
+            return ResponseResult.errorResult(e.getAppHttpCodeEnum());
+        }
+        return ResponseResult.errorResult(e.getAppHttpCodeEnum(), errorMsg);
     }
 
 
