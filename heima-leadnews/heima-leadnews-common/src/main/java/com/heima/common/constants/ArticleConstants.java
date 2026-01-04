@@ -14,5 +14,8 @@ public class ArticleConstants {
 
     public static final String HOT_ARTICLE_FIRST_PAGE = "hot_article_first_page_";
 
+    public static final String CONTENT_ITEM_TEXT = "text";
+    public static final String CONTENT_ITEM_IMG = "image";
+
 
 }

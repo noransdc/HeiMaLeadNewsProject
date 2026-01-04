@@ -69,6 +69,17 @@ alter table article
 alter table article
     drop column content_id;
 
+alter table article
+    add column reject_reason varchar(255) default null
+        comment '审核失败理由'
+        after audit_status;
+
+alter table article
+    add column is_enabled tinyint unsigned not null default 1
+        comment '可用，0否，1是'
+        after reject_reason;
+
+
 -- v1.0: initial article content table
 create table article_content
 (
@@ -81,6 +92,11 @@ create table article_content
   default charset = utf8mb4
   collate = utf8mb4_unicode_ci
     comment = '文章内容表';
+
+-- v1.1: modify content to not null
+alter table article_content
+    modify column content mediumtext not null
+        comment '文章内容';
 
 
 -- v1.0: initial article interaction
@@ -146,3 +162,31 @@ create table author_material
   default charset = utf8mb4
   collate = utf8mb4_unicode_ci
     comment ='作者个人素材表';
+
+
+-- v1.0 initial article sensitive
+create table article_sensitive
+(
+    id          bigint unsigned not null auto_increment comment '主键id',
+
+    name        varchar(50)     not null comment '敏感词',
+
+    create_time datetime        not null default current_timestamp comment '创建时间',
+    update_time datetime        not null default current_timestamp
+        on update current_timestamp comment '更新时间',
+
+    primary key (id),
+    unique key uk_name (name)
+
+) engine = InnoDB
+  default charset = utf8mb4
+  collate = utf8mb4_unicode_ci
+    comment ='文章敏感词表';
+
+
+-- v1.1 add column is_delete delete_time
+alter table article_sensitive
+    add column is_delete   tinyint unsigned not null default 0 comment '是否已删除，0未删除，1已删除'
+        after name,
+    add column delete_time datetime default null comment '删除时间'
+        after is_delete;

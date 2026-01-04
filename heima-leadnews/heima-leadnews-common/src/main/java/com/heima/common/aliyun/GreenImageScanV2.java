@@ -10,6 +10,8 @@ import com.aliyun.green20220302.models.ImageModerationResponseBody.ImageModerati
 import com.aliyun.green20220302.models.ImageModerationResponseBody.ImageModerationResponseBodyDataResult;
 import com.aliyun.teaopenapi.models.Config;
 import com.aliyun.teautil.models.RuntimeOptions;
+import com.heima.common.enums.GreenScanEnum;
+import com.heima.model.articlecore.dto.GreenScanRspDto;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -27,7 +29,7 @@ public class GreenImageScanV2 {
     private String secret;
 
 
-    public Map<String, String> scan(List<String> urlList) throws Exception {
+    public GreenScanRspDto scan(List<String> urlList) throws Exception {
         Map<String, String> resultMap = new HashMap<>();
 
 //        int i = new Random().nextInt(3);
@@ -44,7 +46,9 @@ public class GreenImageScanV2 {
         resultMap.put("suggestion", "pass");
         resultMap.put("label", "none");
 
-        return resultMap;
+
+
+        return new GreenScanRspDto(GreenScanEnum.PASS.getCode(), "pass");
     }
 
 

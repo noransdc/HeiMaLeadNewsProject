@@ -188,8 +188,8 @@ public class WmAutoScanServiceImpl implements WmAutoScanService {
 
         try {
 
-            Map<String, String> map = greenTextScanV1.scan(text);
-            return processScanResult(map, wmNews);
+//            Map<String, String> map = greenTextScanV1.scan(text);
+//            return processScanResult(map, wmNews);
 
         } catch (Exception e){
             e.printStackTrace();
@@ -220,8 +220,8 @@ public class WmAutoScanServiceImpl implements WmAutoScanService {
                 }
             }
 
-            Map<String, String> map = greenImageScanV2.scan(list);
-            return processScanResult(map, wmNews);
+//            Map<String, String> map = greenImageScanV2.scan(list);
+//            return processScanResult(map, wmNews);
 
         } catch (Exception e){
             e.printStackTrace();

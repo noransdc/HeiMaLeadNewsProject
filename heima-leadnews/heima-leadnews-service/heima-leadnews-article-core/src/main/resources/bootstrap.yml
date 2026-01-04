@@ -13,4 +13,7 @@ spring:
         file-extension: yml
 
 
+tess4j:
+  data-path: D:\Work\tools\OCR-tess4j
+  language: chi_sim
 

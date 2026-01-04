@@ -5,11 +5,14 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.article.core.mapper.ArticleContentMapper;
 import com.heima.article.core.mapper.ArticleMapper;
+import com.heima.article.core.service.ArticleAuditService;
 import com.heima.article.core.service.ArticleChannelService;
 import com.heima.article.core.service.ArticleService;
+import com.heima.common.constants.ArticleConstants;
 import com.heima.common.enums.ArticleAuditEnum;
 import com.heima.common.enums.ArticleCoverEnum;
 import com.heima.common.exception.CustomException;
+import com.heima.model.articlecore.dto.ArticleDetailDto;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
 import com.heima.model.articlecore.entity.Article;
 import com.heima.model.articlecore.entity.ArticleContent;
@@ -30,7 +33,6 @@ import java.util.stream.Collectors;
 @Service
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
 
-    private final String CONTENT_IMG = "image";
 
 
     @Autowired
@@ -38,6 +40,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Autowired
     private ArticleChannelService articleChannelService;
+
+    @Autowired
+    private ArticleAuditService articleAuditService;
 
 
     @Transactional
@@ -60,6 +65,68 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         articleContentMapper.insert(articleContent);
 
+        articleAuditService.audit(article.getId());
+    }
+
+    @Override
+    public void updateAuditStatus(Long articleId, ArticleAuditEnum status, String reason) {
+        if (articleId == null){
+            throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID);
+        }
+
+        Article article = getValidArticle(articleId);
+
+        ArticleAuditEnum current = ArticleAuditEnum.codeOf(article.getAuditStatus());
+
+        if (current == null){
+            throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID);
+        }
+
+        if (!current.canTransitTo(status)){
+            throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID,
+                    "非法的审核状态迁移：" + current + " -> " + status);
+        }
+
+        article.setAuditStatus(status.getCode());
+        article.setRejectReason(reason);
+
+        updateById(article);
+
+    }
+
+
+
+    @Override
+    public ArticleDetailDto getArticleDetail(Long articleId) {
+        if (articleId == null){
+            throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID);
+        }
+        Article article = getById(articleId);
+
+        ArticleContent articleContent = articleContentMapper.selectById(articleId);
+
+        if (article == null || articleContent == null){
+            throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID, "文章不存在");
+        }
+
+        ArticleDetailDto articleDetailDto = new ArticleDetailDto();
+        articleDetailDto.setArticle(article);
+        articleDetailDto.setArticleContent(articleContent);
+
+        return articleDetailDto;
+    }
+
+    private Article getValidArticle(Long articleId){
+         Article article = lambdaQuery().eq(Article::getId, articleId)
+                .eq(Article::getIsEnabled, 1)
+                .eq(Article::getIsDelete, 0)
+                .one();
+
+        if (article == null){
+            throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID, "该文章无效");
+        }
+
+        return article;
     }
 
     private Article convertToArticle(ArticleSubmitDto dto, String coverImgUrlStr){
@@ -70,7 +137,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (dto.getIsDraft() == 1){
             article.setAuditStatus(ArticleAuditEnum.DRAFT.getCode());
         } else if (dto.getIsDraft() == 0){
-            article.setAuditStatus(ArticleAuditEnum.SUBMITTED.getCode());
+            article.setAuditStatus(ArticleAuditEnum.PENDING_AUDIT.getCode());
         }
         return article;
     }
@@ -151,7 +218,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         List<String> urlList = new ArrayList<>();
         for (ArticleContentItem item : itemList) {
-            if (CONTENT_IMG.equals(item.getType()) && StringUtils.isNotBlank(item.getValue())){
+            if (ArticleConstants.CONTENT_ITEM_IMG.equals(item.getType()) && StringUtils.isNotBlank(item.getValue())){
                 urlList.add(item.getValue());
             }
         }

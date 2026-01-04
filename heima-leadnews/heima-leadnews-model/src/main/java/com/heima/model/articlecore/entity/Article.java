@@ -39,6 +39,9 @@ public class Article {
     @TableField("audit_status")
     private Integer auditStatus;
 
+    @TableField("reject_reason")
+    private String rejectReason;
+
     @TableField("is_delete")
     private Integer isDelete;
 
