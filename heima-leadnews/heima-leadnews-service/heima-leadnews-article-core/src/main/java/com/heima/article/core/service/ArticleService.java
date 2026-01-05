@@ -17,5 +17,6 @@ public interface ArticleService extends IService<Article> {
 
     ArticleDetailDto getArticleDetail(Long articleId);
 
+    void scanPendingAuditList();
 
 }

@@ -1,9 +1,7 @@
 package com.heima.wemedia.service.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.heima.apis.schedule.IScheduleClient;
+import com.heima.apis.schedule.ScheduleTaskClient;
 import com.heima.common.enums.TaskTypeEnum;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
@@ -28,7 +26,7 @@ public class WmScheduleServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> imp
 
 
     @Autowired
-    private IScheduleClient scheduleClient;
+    private ScheduleTaskClient scheduleClient;
 
     @Autowired
     private WmAutoScanService wmAutoScanService;
