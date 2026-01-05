@@ -4,7 +4,7 @@ package com.heima.article.core.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.apis.schedule.ScheduleTaskClient;
-import com.heima.article.core.constant.ArticleTaskType;
+import com.heima.common.constants.ArticleTaskType;
 import com.heima.article.core.mapper.ArticleContentMapper;
 import com.heima.article.core.mapper.ArticleMapper;
 import com.heima.article.core.service.ArticleAuditService;
@@ -20,17 +20,23 @@ import com.heima.model.articlecore.dto.ArticleSubmitDto;
 import com.heima.model.articlecore.entity.Article;
 import com.heima.model.articlecore.entity.ArticleContent;
 import com.heima.model.articlecore.entity.ArticleContentItem;
+import com.heima.model.articlecore.event.ArticleTaskCreatedEvent;
+import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.enums.AppHttpCodeEnum;
+import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,10 +53,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private ArticleChannelService articleChannelService;
 
     @Autowired
-    private ArticleAuditService articleAuditService;
+    private ScheduleTaskClient scheduleTaskClient;
 
     @Autowired
-    private ScheduleTaskClient scheduleTaskClient;
+    private ApplicationEventPublisher applicationEventPublisher;
 
 
     @Transactional
@@ -73,7 +79,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         articleContentMapper.insert(articleContent);
 
-        articleAuditService.audit(article.getId());
+//        articleAuditService.audit(article.getId());
+
+        applicationEventPublisher.publishEvent(new ArticleTaskCreatedEvent(article));
+
     }
 
     @Override
@@ -124,39 +133,44 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    public void scanPendingAuditList() {
-        List<Article> articleList = lambdaQuery().eq(Article::getAuditStatus, ArticleAuditEnum.PENDING_AUDIT.getCode())
+    public List<ArticleAuditCompensateDto> getArticleAuditCompensateList(PageRequestDto dto) {
+        List<Article> articleList = lambdaQuery()
+                .select(Article::getId, Article::getPublishTime)
+                .eq(Article::getAuditStatus, ArticleAuditEnum.PENDING_AUDIT.getCode())
                 .eq(Article::getIsEnabled, 1)
                 .eq(Article::getIsDelete, 0)
                 .orderByDesc(Article::getPublishTime)
                 .list();
 
-        addToScheduleTask(articleList);
+        List<ArticleAuditCompensateDto> taskDtoList = new ArrayList<>();
+        for (Article article : articleList) {
+            taskDtoList.add(new ArticleAuditCompensateDto(article.getId(), article.getPublishTime()));
+        }
+
+        return taskDtoList;
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handlerArticleTaskCreated(ArticleTaskCreatedEvent event){
+        log.info("handlerArticleTaskCreated, event:{}", event);
+        ArticlePublishDto dto = convertToArticlePublishDto(event.getArticle());
+        try {
+            scheduleTaskClient.addScheduleTask(dto);
+            log.info("scheduleTaskClient.addScheduleTask dto:{}", dto);
+
+        } catch (Exception e){
+            log.info("addToScheduleTask:{}", e.getMessage());
+        }
 
     }
 
-    private void addToScheduleTask(List<Article> articleList){
-//        long current = System.currentTimeMillis();
-//        for (Article article : articleList) {
-//            long publishTime = article.getPublishTime().getTime();
-//            if (publishTime <= current) {
-//
-//            } else if (publishTime <= current + 5 * 60 * 1000) {
-//
-//            }
-//        }
-
-
-        List<ArticlePublishDto> dtoList = new ArrayList<>();
-        for (Article article : articleList) {
-            ArticlePublishDto dto = new ArticlePublishDto();
-            dto.setArticleId(article.getId());
-            dto.setPublishTime(article.getPublishTime());
-            dto.setAction(ArticleTaskType.ARTICLE_AUDIT);
-            dtoList.add(dto);
-        }
-
-        scheduleTaskClient.addScheduleTasks(dtoList);
+    private ArticlePublishDto convertToArticlePublishDto(Article article){
+        ArticlePublishDto dto = new ArticlePublishDto();
+        dto.setArticleId(article.getId());
+        dto.setPublishTime(article.getPublishTime());
+        dto.setAction(ArticleTaskType.ARTICLE_AUDIT);
+        return dto;
     }
 
     private Article getValidArticle(Long articleId) {

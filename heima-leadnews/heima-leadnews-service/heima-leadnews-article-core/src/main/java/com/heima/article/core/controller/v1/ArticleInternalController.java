@@ -5,8 +5,8 @@ import com.heima.article.core.service.ArticleChannelService;
 import com.heima.article.core.service.ArticleService;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
 import com.heima.model.articlecore.entity.ArticleChannel;
-import com.heima.model.common.dtos.ResponseResult;
-import com.heima.model.common.enums.AppHttpCodeEnum;
+import com.heima.model.common.dtos.PageRequestDto;
+import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +32,11 @@ public class ArticleInternalController {
     @GetMapping("/channel/list")
     public List<ArticleChannel> getChannelList(){
         return articleChannelService.getChannelList();
+    }
+
+    @PostMapping("/pending-audit-ids")
+    public List<ArticleAuditCompensateDto> getArticleAuditCompensateList(@RequestBody PageRequestDto dto){
+        return articleService.getArticleAuditCompensateList(dto);
     }
 
 }

@@ -4,11 +4,9 @@ package com.heima.article.core.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.article.core.mapper.ArticleChannelMapper;
 import com.heima.article.core.service.ArticleChannelService;
-import com.heima.article.core.service.ArticleService;
 import com.heima.common.exception.CustomException;
 import com.heima.model.articlecore.entity.ArticleChannel;
 import com.heima.model.common.enums.AppHttpCodeEnum;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,8 +15,6 @@ import java.util.List;
 @Service
 public class ArticleChannelServiceImpl extends ServiceImpl<ArticleChannelMapper, ArticleChannel> implements ArticleChannelService {
 
-    @Autowired
-    private ArticleService articleService;
 
     @Override
     public void add() {
@@ -30,8 +26,6 @@ public class ArticleChannelServiceImpl extends ServiceImpl<ArticleChannelMapper,
                 .eq(ArticleChannel::getIsEnabled, 1)
                 .orderByDesc(ArticleChannel::getSort)
                 .list();
-
-        articleService.scanPendingAuditList();
 
         return list;
     }

@@ -4,8 +4,13 @@ package com.heima.article.core.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.heima.common.enums.ArticleAuditEnum;
 import com.heima.model.articlecore.dto.ArticleDetailDto;
+import com.heima.model.articlecore.dto.ArticlePublishDto;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
 import com.heima.model.articlecore.entity.Article;
+import com.heima.model.common.dtos.PageRequestDto;
+import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
+
+import java.util.List;
 
 
 public interface ArticleService extends IService<Article> {
@@ -17,6 +22,6 @@ public interface ArticleService extends IService<Article> {
 
     ArticleDetailDto getArticleDetail(Long articleId);
 
-    void scanPendingAuditList();
+    List<ArticleAuditCompensateDto> getArticleAuditCompensateList(PageRequestDto dto);
 
 }

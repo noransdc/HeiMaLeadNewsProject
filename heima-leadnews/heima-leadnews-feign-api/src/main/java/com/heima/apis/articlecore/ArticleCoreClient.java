@@ -3,6 +3,8 @@ package com.heima.apis.articlecore;
 
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
 import com.heima.model.articlecore.entity.ArticleChannel;
+import com.heima.model.common.dtos.PageRequestDto;
+import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +21,9 @@ public interface ArticleCoreClient {
 
     @GetMapping("/internal/article/channel/list")
     List<ArticleChannel> getChannelList();
+
+    @PostMapping("/internal/article/pending-audit-ids")
+    List<ArticleAuditCompensateDto> getArticleAuditCompensateList(@RequestBody PageRequestDto dto);
 
 
 }

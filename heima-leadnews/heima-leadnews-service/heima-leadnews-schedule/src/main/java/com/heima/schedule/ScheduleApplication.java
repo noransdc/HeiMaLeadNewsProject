@@ -16,6 +16,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableDiscoveryClient
 @MapperScan("com.heima.schedule.mapper")
 @EnableScheduling
+@EnableFeignClients("com.heima.apis")
 public class ScheduleApplication {
 
     public static void main(String[] args) {

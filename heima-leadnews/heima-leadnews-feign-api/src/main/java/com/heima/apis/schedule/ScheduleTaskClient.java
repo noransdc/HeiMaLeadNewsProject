@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.List;
-
 
 @FeignClient(value = "leadnews-schedule")
 public interface ScheduleTaskClient {
@@ -25,7 +23,7 @@ public interface ScheduleTaskClient {
 
 
     @PostMapping("/internal/schedule/tasks/add")
-    void addScheduleTasks(@RequestBody List<ArticlePublishDto> list);
+    void addScheduleTask(@RequestBody ArticlePublishDto dto);
 
 
 }

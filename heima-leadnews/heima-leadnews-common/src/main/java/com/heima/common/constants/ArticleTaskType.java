@@ -1,4 +1,4 @@
-package com.heima.article.core.constant;
+package com.heima.common.constants;
 
 
 public class ArticleTaskType {
