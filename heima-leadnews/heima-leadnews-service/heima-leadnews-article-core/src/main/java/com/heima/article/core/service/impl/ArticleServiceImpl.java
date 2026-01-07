@@ -14,6 +14,7 @@ import com.heima.common.constants.ArticleConstants;
 import com.heima.common.enums.ArticleAuditEnum;
 import com.heima.common.enums.ArticleCoverEnum;
 import com.heima.common.exception.CustomException;
+import com.heima.model.articlecore.dto.ArticleAuditRsp;
 import com.heima.model.articlecore.dto.ArticleDetailDto;
 import com.heima.model.articlecore.dto.ArticlePublishDto;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
@@ -58,6 +59,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
 
+    @Autowired
+    private ArticleAuditService articleAuditService;
+
 
     @Transactional
     @Override
@@ -86,28 +90,43 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    public void updateAuditStatus(Long articleId, ArticleAuditEnum status, String reason) {
+    public void callAudit(Long articleId) {
+        ArticleDetailDto articleDetail = getArticleDetail(articleId);
+        if (articleDetail.getArticle().getAuditStatus() != ArticleAuditEnum.PENDING_AUDIT.getCode()){
+            log.info("article {} already audited, skip", articleId);
+            return;
+        }
+        ArticleAuditRsp auditRsp = articleAuditService.audit(articleDetail);
+        updateAuditStatus(articleId, auditRsp.getAuditStatus(), auditRsp.getErrorMsg());
+
+    }
+
+    @Override
+    public void updateAuditStatus(Long articleId, Integer targetStatus, String reason) {
         if (articleId == null) {
             throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID);
         }
 
         Article article = getValidArticle(articleId);
 
-        ArticleAuditEnum current = ArticleAuditEnum.codeOf(article.getAuditStatus());
+        ArticleAuditEnum currentEnum = ArticleAuditEnum.codeOf(article.getAuditStatus());
+        ArticleAuditEnum targetEnum = ArticleAuditEnum.codeOf(targetStatus);
 
-        if (current == null) {
+        if (currentEnum == null || targetEnum == null) {
             throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID);
         }
 
-        if (!current.canTransitTo(status)) {
+        if (!currentEnum.canTransitTo(targetEnum)) {
             throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID,
-                    "非法的审核状态迁移：" + current + " -> " + status);
+                    "非法的审核状态迁移：" + currentEnum + " -> " + targetStatus);
         }
 
-        article.setAuditStatus(status.getCode());
+        article.setAuditStatus(targetStatus);
         article.setRejectReason(reason);
 
         updateById(article);
+
+        log.info("updateAuditStatus:{}", article);
 
     }
 

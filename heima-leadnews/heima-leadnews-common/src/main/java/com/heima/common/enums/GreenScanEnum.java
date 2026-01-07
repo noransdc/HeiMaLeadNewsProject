@@ -23,10 +23,6 @@ public enum GreenScanEnum {
         return code;
     }
 
-    public void setCode(int code) {
-        this.code = code;
-    }
-
     public static GreenScanEnum codeOf(int code){
         for (GreenScanEnum value : values()) {
             if (value.code == code){

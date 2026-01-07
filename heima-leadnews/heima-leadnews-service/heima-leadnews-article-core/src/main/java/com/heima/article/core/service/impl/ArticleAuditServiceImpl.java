@@ -13,6 +13,7 @@ import com.heima.common.enums.ArticleAuditEnum;
 import com.heima.common.enums.GreenScanEnum;
 import com.heima.common.exception.CustomException;
 import com.heima.file.service.FileStorageService;
+import com.heima.model.articlecore.dto.ArticleAuditRsp;
 import com.heima.model.articlecore.dto.ArticleDetailDto;
 import com.heima.model.articlecore.dto.GreenScanRspDto;
 import com.heima.model.articlecore.entity.Article;
@@ -39,9 +40,6 @@ public class ArticleAuditServiceImpl implements ArticleAuditService {
 
 
     @Autowired
-    private ArticleService articleService;
-
-    @Autowired
     private ArticleSensitiveService articleSensitiveService;
 
     @Autowired
@@ -54,12 +52,10 @@ public class ArticleAuditServiceImpl implements ArticleAuditService {
     private FileStorageService fileStorageService;
 
 
-
-    @Async
     @Override
-    public void audit(Long articleId) {
+    public ArticleAuditRsp audit(ArticleDetailDto articleDetail) {
 
-        ArticleDetailDto articleDetail = articleService.getArticleDetail(articleId);
+        Long articleId = articleDetail.getArticle().getId();
 
         Map<String, List<String>> map = getMaterial(articleDetail);
 
@@ -67,20 +63,27 @@ public class ArticleAuditServiceImpl implements ArticleAuditService {
         List<String> urlList = map.get(ArticleConstants.CONTENT_ITEM_IMG);
 
         String text = StringUtils.join(textList, ",");
-        if (!auditTextLocal(articleId, text)){
-            return;
+
+        ArticleAuditRsp textLocalRsp = auditTextLocal(articleId, text);
+        if (textLocalRsp.getAuditStatus() != ArticleAuditEnum.AUDIT_SUCCESS.getCode()){
+            return textLocalRsp;
         }
 
-        if (!auditTextThirdParty(articleId, text)){
-            return;
+        ArticleAuditRsp textThirdPartyRsp = auditTextThirdParty(articleId, text);
+        if (textThirdPartyRsp.getAuditStatus() != ArticleAuditEnum.AUDIT_SUCCESS.getCode()){
+            return textThirdPartyRsp;
         }
 
-        if (!auditImages(articleId, urlList)){
-            return;
+        ArticleAuditRsp imagesRsp = auditImages(articleId, urlList);
+        if (imagesRsp.getAuditStatus() != ArticleAuditEnum.AUDIT_SUCCESS.getCode()){
+            return imagesRsp;
         }
 
-        articleService.updateAuditStatus(articleId, ArticleAuditEnum.AUDIT_SUCCESS, null);
+        log.info("article article pass:{}", articleId);
 
+//        articleService.updateAuditStatus(articleId, ArticleAuditEnum.AUDIT_SUCCESS, null);
+
+        return buildAuditSuccessRsp(articleId);
     }
 
     private Map<String, List<String>> getMaterial(ArticleDetailDto articleDetail){
@@ -117,37 +120,45 @@ public class ArticleAuditServiceImpl implements ArticleAuditService {
         return map;
     }
 
-    private boolean auditTextLocal(Long articleId, String text){
-        Map<String, Integer> scan = articleSensitiveService.scan(text);
-        if (scan.isEmpty()){
-            return true;
-        }
-        articleService.updateAuditStatus(articleId, ArticleAuditEnum.AUTO_AUDIT_FAILED, scan.toString());
-        return false;
+    private ArticleAuditRsp buildAuditSuccessRsp(Long articleId){
+        return new ArticleAuditRsp(articleId, ArticleAuditEnum.AUDIT_SUCCESS.getCode(), null);
     }
 
-    private boolean auditTextThirdParty(Long articleId, String text){
+    private ArticleAuditRsp buildAuditFailRsp(Long articleId, String msg){
+        return new ArticleAuditRsp(articleId, ArticleAuditEnum.AUTO_AUDIT_FAILED.getCode(), msg);
+    }
+
+    private ArticleAuditRsp auditTextLocal(Long articleId, String text){
+        Map<String, Integer> scan = articleSensitiveService.scan(text);
+        log.info("auditTextLocal:{}", scan);
+        if (scan.isEmpty()){
+            return buildAuditSuccessRsp(articleId);
+        }
+        return buildAuditFailRsp(articleId, scan.toString());
+    }
+
+    private ArticleAuditRsp auditTextThirdParty(Long articleId, String text){
         try {
             GreenScanRspDto rsp = greenTextScanV1.scan(text);
+            log.info("auditTextThirdParty:{}", rsp);
             if (rsp.getRiskLevel() == GreenScanEnum.PASS.getCode()){
-                return true;
+                return buildAuditSuccessRsp(articleId);
             } else {
-                articleService.updateAuditStatus(articleId, ArticleAuditEnum.AUTO_AUDIT_FAILED, rsp.getSuggestion());
-                return false;
+                return buildAuditFailRsp(articleId, rsp.getSuggestion());
             }
 
         } catch (Exception e){
             log.warn("auditTextThirdParty error:{}", e.getMessage());
-            articleService.updateAuditStatus(articleId, ArticleAuditEnum.AUTO_AUDIT_FAILED, e.getMessage());
+            return buildAuditFailRsp(articleId, e.getMessage());
         }
 
-        return false;
     }
 
-    private boolean auditImages(Long articleId, List<String> urlList){
+    private ArticleAuditRsp auditImages(Long articleId, List<String> urlList){
         if (urlList.isEmpty()){
-            return true;
+            return buildAuditSuccessRsp(articleId);
         }
+
         for (String url : urlList) {
             byte[] bytes = fileStorageService.downLoadFile(url);
 //            ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
@@ -156,19 +167,18 @@ public class ArticleAuditServiceImpl implements ArticleAuditService {
 
         try {
             GreenScanRspDto rsp = greenImageScanV2.scan(urlList);
+            log.info("auditImages:{}", rsp);
             if (rsp.getRiskLevel() == GreenScanEnum.PASS.getCode()){
-                return true;
+                return buildAuditSuccessRsp(articleId);
             } else {
-                articleService.updateAuditStatus(articleId, ArticleAuditEnum.AUTO_AUDIT_FAILED, rsp.getSuggestion());
-                return false;
+                return buildAuditFailRsp(articleId, rsp.getSuggestion());
             }
 
         } catch (Exception e){
             log.info("audit images error:{}", e.getMessage());
-            articleService.updateAuditStatus(articleId, ArticleAuditEnum.AUTO_AUDIT_FAILED, e.getMessage());
+            return buildAuditFailRsp(articleId, e.getMessage());
         }
 
-        return false;
     }
 
 

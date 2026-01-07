@@ -18,10 +18,12 @@ public interface ArticleService extends IService<Article> {
 
     void submit(ArticleSubmitDto dto);
 
-    void updateAuditStatus(Long articleId, ArticleAuditEnum status, String reason);
+    void updateAuditStatus(Long articleId, Integer targetStatus, String reason);
 
     ArticleDetailDto getArticleDetail(Long articleId);
 
     List<ArticleAuditCompensateDto> getArticleAuditCompensateList(PageRequestDto dto);
+
+    void callAudit(Long articleId);
 
 }

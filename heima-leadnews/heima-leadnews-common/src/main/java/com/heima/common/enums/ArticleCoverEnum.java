@@ -23,11 +23,6 @@ public enum ArticleCoverEnum {
         return code;
     }
 
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-
     public static ArticleCoverEnum codeOf(int code){
         for (ArticleCoverEnum value : values()) {
             if (value.getCode() == code){

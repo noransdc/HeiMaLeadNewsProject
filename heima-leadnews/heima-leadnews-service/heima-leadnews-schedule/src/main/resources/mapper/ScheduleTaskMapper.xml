@@ -3,6 +3,7 @@
 
 
 <mapper namespace="com.heima.schedule.mapper.ScheduleTaskMapper">
+
     <insert id="insertBatch">
         insert into schedule_task
         (task_type, biz_key, execute_time, parameters)
@@ -18,4 +19,71 @@
         on duplicate key update
             execute_time = least(execute_time, VALUES(execute_time))
     </insert>
+
+    <select id="pickAuditExecutableTasks" resultType="com.heima.model.schedule.entity.ScheduleTask">
+        select * from schedule_task
+        <where>
+            status = 0
+            <![CDATA[
+                or (status = 3 and retry_count < max_retry)
+            ]]>
+            <if test="executeTime != null">
+                <![CDATA[
+                    and execute_time <= #{executeTime}
+                 ]]>
+            </if>
+        </where>
+        order by execute_time asc
+        limit 2
+        for update skip locked
+
+    </select>
+
+    <update id="markStatusBatch">
+        update schedule_task
+        set status = #{runningStatus}
+        where
+            <![CDATA[
+            (status = #{initStatus} or (status = #{failStatus} and retry_count < max_retry))
+            ]]>
+            and id in
+        <foreach collection="tasks" item="task" separator="," open="(" close=")">
+            #{task.id}
+        </foreach>
+    </update>
+
+    <update id="markSuccess">
+        update schedule_task
+        set status = #{successStatus},
+            error_msg = null
+        where id = #{taskId}
+        and status = #{runningStatus}
+    </update>
+
+    <update id="markFailRetryable">
+        update schedule_task
+        set status = #{failStatus},
+            retry_count = retry_count + 1,
+            error_msg = #{errorMsg}
+        where
+            id = #{taskId}
+            and status = #{runningStatus}
+            <![CDATA[
+              and retry_count < max_retry
+            ]]>
+    </update>
+
+    <update id="markFailUnrecoverable">
+        update schedule_task
+        set status      = #{failStatus},
+            retry_count = max_retry,
+            error_msg   = #{errorMsg}
+        where id = #{taskId}
+          and status = #{runningStatus}
+            <![CDATA[
+          and retry_count < max_retry
+        ]]>
+    </update>
+
+
 </mapper>

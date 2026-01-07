@@ -25,10 +25,6 @@ public enum ArticleAuditEnum {
         return code;
     }
 
-    public void setCode(int code) {
-        this.code = code;
-    }
-
     public static ArticleAuditEnum codeOf(int code){
         for (ArticleAuditEnum value : values()) {
             if (value.code == code){

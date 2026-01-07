@@ -1,6 +1,7 @@
 package com.heima.article.core.controller.v1;
 
 
+import com.heima.article.core.service.ArticleAuditService;
 import com.heima.article.core.service.ArticleChannelService;
 import com.heima.article.core.service.ArticleService;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
@@ -24,6 +25,8 @@ public class ArticleInternalController {
     @Autowired
     private ArticleChannelService articleChannelService;
 
+
+
     @PostMapping("/add")
     public void submit(@RequestBody ArticleSubmitDto dto){
         articleService.submit(dto);
@@ -38,5 +41,11 @@ public class ArticleInternalController {
     public List<ArticleAuditCompensateDto> getArticleAuditCompensateList(@RequestBody PageRequestDto dto){
         return articleService.getArticleAuditCompensateList(dto);
     }
+
+    @PostMapping("/audit/{articleId}")
+    public void postAudit(@PathVariable Long articleId){
+        articleService.callAudit(articleId);
+    }
+
 
 }

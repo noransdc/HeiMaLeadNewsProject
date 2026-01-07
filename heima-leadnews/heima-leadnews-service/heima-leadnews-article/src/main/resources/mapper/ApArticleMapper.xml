@@ -26,6 +26,7 @@
         <result column="static_url" property="staticUrl"/>
         <result column="content" property="content"/>
     </resultMap>
+
     <select id="loadArticleList" resultMap="resultMap">
         SELECT
         aa.*
