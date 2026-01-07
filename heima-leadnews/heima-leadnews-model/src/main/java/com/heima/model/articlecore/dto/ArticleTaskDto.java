@@ -7,12 +7,13 @@ import java.util.Date;
 
 
 @Data
-public class ArticlePublishDto {
+public class ArticleTaskDto {
 
 
     private Long articleId;
     private Date publishTime;
     private String action;
+    private String parameters;
 
 
 }

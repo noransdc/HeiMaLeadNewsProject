@@ -13,10 +13,11 @@ import com.heima.article.core.service.ArticleService;
 import com.heima.common.constants.ArticleConstants;
 import com.heima.common.enums.ArticleAuditEnum;
 import com.heima.common.enums.ArticleCoverEnum;
+import com.heima.common.enums.ArticlePublishRspEnum;
 import com.heima.common.exception.CustomException;
 import com.heima.model.articlecore.dto.ArticleAuditRsp;
 import com.heima.model.articlecore.dto.ArticleDetailDto;
-import com.heima.model.articlecore.dto.ArticlePublishDto;
+import com.heima.model.articlecore.dto.ArticleTaskDto;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
 import com.heima.model.articlecore.entity.Article;
 import com.heima.model.articlecore.entity.ArticleContent;
@@ -25,17 +26,21 @@ import com.heima.model.articlecore.event.ArticleTaskCreatedEvent;
 import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
+import com.heima.model.schedule.dto.ArticleParameterDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jsoup.HttpStatusException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,13 +96,35 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public void callAudit(Long articleId) {
-        ArticleDetailDto articleDetail = getArticleDetail(articleId);
-        if (articleDetail.getArticle().getAuditStatus() != ArticleAuditEnum.PENDING_AUDIT.getCode()){
-            log.info("article {} already audited, skip", articleId);
-            return;
+        try {
+            ArticleDetailDto articleDetail = getArticleDetail(articleId);
+            if (articleDetail.getArticle().getAuditStatus() != ArticleAuditEnum.PENDING_AUDIT.getCode()){
+                log.info("article {} already audited, skip", articleId);
+                return;
+            }
+            ArticleAuditRsp auditRsp = articleAuditService.audit(articleDetail);
+            updateAuditStatus(articleId, auditRsp.getAuditStatus(), auditRsp.getErrorMsg());
+
+        } catch (CustomException e){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
         }
-        ArticleAuditRsp auditRsp = articleAuditService.audit(articleDetail);
-        updateAuditStatus(articleId, auditRsp.getAuditStatus(), auditRsp.getErrorMsg());
+
+
+    }
+
+    @Override
+    public void callPublish(Long articleId) {
+        Article article = getById(articleId);
+        if (article.getAuditStatus() != ArticleAuditEnum.AUDIT_SUCCESS.getCode()){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "not ready");
+        }
+
+        try {
+            updateAuditStatus(articleId, ArticleAuditEnum.PUBLISHED.getCode(), null);
+
+        } catch (CustomException e){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+        }
 
     }
 
@@ -173,7 +200,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handlerArticleTaskCreated(ArticleTaskCreatedEvent event){
         log.info("handlerArticleTaskCreated, event:{}", event);
-        ArticlePublishDto dto = convertToArticlePublishDto(event.getArticle());
+        ArticleTaskDto dto = convertToArticleTaskDto(event.getArticle());
         try {
             scheduleTaskClient.addScheduleTask(dto);
             log.info("scheduleTaskClient.addScheduleTask dto:{}", dto);
@@ -184,8 +211,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     }
 
-    private ArticlePublishDto convertToArticlePublishDto(Article article){
-        ArticlePublishDto dto = new ArticlePublishDto();
+    private ArticleTaskDto convertToArticleTaskDto(Article article){
+        ArticleTaskDto dto = new ArticleTaskDto();
         dto.setArticleId(article.getId());
         dto.setPublishTime(article.getPublishTime());
         dto.setAction(ArticleTaskType.ARTICLE_AUDIT);

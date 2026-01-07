@@ -47,5 +47,9 @@ public class ArticleInternalController {
         articleService.callAudit(articleId);
     }
 
+    @PostMapping("/publish/{articleId}")
+    public void postPublish(@PathVariable Long articleId){
+        articleService.callPublish(articleId);
+    }
 
 }

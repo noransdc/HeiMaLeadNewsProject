@@ -29,4 +29,7 @@ public interface ArticleCoreClient {
     @PostMapping("/internal/article/audit/{articleId}")
     void postAudit(@PathVariable Long articleId);
 
+    @PostMapping("/internal/article/publish/{articleId}")
+    void postPublish(@PathVariable Long articleId);
+
 }

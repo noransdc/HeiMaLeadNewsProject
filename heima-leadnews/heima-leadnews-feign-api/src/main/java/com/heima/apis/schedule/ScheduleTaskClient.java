@@ -1,7 +1,7 @@
 package com.heima.apis.schedule;
 
 
-import com.heima.model.articlecore.dto.ArticlePublishDto;
+import com.heima.model.articlecore.dto.ArticleTaskDto;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.schedule.pojos.Task;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -23,7 +23,7 @@ public interface ScheduleTaskClient {
 
 
     @PostMapping("/internal/schedule/tasks/add")
-    void addScheduleTask(@RequestBody ArticlePublishDto dto);
+    void addScheduleTask(@RequestBody ArticleTaskDto dto);
 
 
 }

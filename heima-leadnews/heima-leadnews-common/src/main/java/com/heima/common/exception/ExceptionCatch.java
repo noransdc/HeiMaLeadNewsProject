@@ -9,10 +9,16 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice  //控制器增强类
 @Slf4j
 public class ExceptionCatch {
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public void handleResponseStatusException(ResponseStatusException e) {
+        throw e; // 关键：直接往外抛
+    }
 
     /**
      * 处理不可控异常
@@ -34,10 +40,10 @@ public class ExceptionCatch {
     public ResponseResult exception(CustomException e){
         log.error("catch exception:{}",e);
         String errorMsg = e.getErrorMsg();
-        if (StringUtils.isBlank(errorMsg)){
-            return ResponseResult.errorResult(e.getAppHttpCodeEnum());
+        if (StringUtils.isNotBlank(errorMsg)){
+            return ResponseResult.errorResult(e.getAppHttpCodeEnum(), errorMsg);
         }
-        return ResponseResult.errorResult(e.getAppHttpCodeEnum(), errorMsg);
+        return ResponseResult.errorResult(e.getAppHttpCodeEnum());
     }
 
 

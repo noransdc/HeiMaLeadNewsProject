@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
 
 
 @Data
@@ -15,7 +14,7 @@ public class ArticleParameterDto {
 
 
     private Long articleId;
-    private Date publishTime;
+    private String action;
 
 
 }

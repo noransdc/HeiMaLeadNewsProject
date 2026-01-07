@@ -1,7 +1,7 @@
 package com.heima.schedule.controller;
 
 
-import com.heima.model.articlecore.dto.ArticlePublishDto;
+import com.heima.model.articlecore.dto.ArticleTaskDto;
 import com.heima.schedule.service.ScheduleTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +15,7 @@ public class ScheduleInternalController {
     private ScheduleTaskService scheduleTaskService;
 
     @PostMapping("/tasks/add")
-    void addScheduleTask(@RequestBody ArticlePublishDto dto){
+    void addScheduleTask(@RequestBody ArticleTaskDto dto){
         scheduleTaskService.addScheduleTask(dto);
     }
 

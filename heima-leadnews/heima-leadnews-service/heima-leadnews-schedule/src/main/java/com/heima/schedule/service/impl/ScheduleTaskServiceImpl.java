@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.apis.articlecore.ArticleCoreClient;
 import com.heima.common.constants.ArticleTaskType;
-import com.heima.model.articlecore.dto.ArticlePublishDto;
+import com.heima.model.articlecore.dto.ArticleTaskDto;
 import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
 import com.heima.model.schedule.dto.ArticleParameterDto;
@@ -23,6 +23,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Date;
@@ -47,33 +48,55 @@ public class ScheduleTaskServiceImpl extends ServiceImpl<ScheduleTaskMapper, Sch
     private ThreadPoolTaskExecutor taskExecutor;
 
 
+    @Transactional
     @Override
-    public void addScheduleTask(ArticlePublishDto dto) {
+    public void addScheduleTask(ArticleTaskDto dto) {
         if (dto == null || dto.getArticleId() == null || dto.getPublishTime() == null || StringUtils.isBlank(dto.getAction())){
             return;
         }
 
-        ScheduleTask task = buildTaskByAction(dto.getArticleId(), dto.getPublishTime(), dto.getAction());
-        save(task);
+        Date now = new Date();
+        Date publishTime = dto.getPublishTime();
+        Date executeTime = publishTime.after(now) ? publishTime : now;
+
+        ScheduleTask auditTask = buildTask(dto.getArticleId(), now, ArticleTaskType.ARTICLE_AUDIT);
+        save(auditTask);
+
+        ScheduleTask publishTask = buildTask(dto.getArticleId(), executeTime, ArticleTaskType.ARTICLE_PUBLISH);
+        save(publishTask);
+
     }
 
-    @Scheduled(initialDelay = 60_000, fixedDelay = 300_000)
+    @Transactional
+    @Scheduled(initialDelay = 30 * 1000, fixedDelay = 2 * 60 * 1000)
     public void compensateAuditTask(){
         PageRequestDto dto = new PageRequestDto();
         dto.setPage(1);
-        dto.setSize(100);
+        dto.setSize(20);
         List<ArticleAuditCompensateDto> list = articleCoreClient.getArticleAuditCompensateList(dto);
-        log.info("compensateAuditTask list:{}", list);
+        for (ArticleAuditCompensateDto item : list) {
+            log.info("compensateAuditTask item:{}", item);
+        }
 
         for (ArticleAuditCompensateDto item : list) {
-            ScheduleTask task = buildTaskByAction(item.getArticleId(), item.getPublishTime(), ArticleTaskType.ARTICLE_AUDIT);
+            Date now = new Date();
+            Date publishTime = item.getPublishTime();
+            Date executeTime = publishTime.after(now) ? publishTime : now;
+
+            ScheduleTask auditTask = buildTask(item.getArticleId(), now, ArticleTaskType.ARTICLE_AUDIT);
             try {
-                save(task);
+                save(auditTask);
 
             } catch (DuplicateKeyException e){
                 // 已存在，正常情况
-            } catch (Exception e){
-                log.error("compensate audit task failed, articleId={}", item.getArticleId(), e);
+            }
+
+            ScheduleTask publishTask = buildTask(item.getArticleId(), executeTime, ArticleTaskType.ARTICLE_PUBLISH);
+            try {
+                save(publishTask);
+
+            } catch (DuplicateKeyException e){
+                // 已存在，正常情况
             }
         }
 
@@ -97,27 +120,33 @@ public class ScheduleTaskServiceImpl extends ServiceImpl<ScheduleTaskMapper, Sch
         for (ScheduleTask item : tasks) {
             taskExecutor.execute(()->{
 
-                String parameters = item.getParameters();
-                ArticleParameterDto parameterDto;
+                String bizKey = item.getBizKey();
+                String[] split = bizKey.split(":");
+                Long articleId;
                 try {
-                    parameterDto = JSON.parseObject(parameters, ArticleParameterDto.class);
+                    articleId = Long.parseLong(split[1]);
 
                 } catch (Exception e){
-                    log.error("task {} parse json failed, parameters={}", item.getId(), parameters, e);
+                    log.error("task {} parse bizKey failed, bizKey={}", item.getId(), bizKey, e);
                     markFailUnrecoverable(item.getId(), "parse json error:" + item);
                     return;
                 }
 
-                if (parameterDto != null){
-                    try {
-                        articleCoreClient.postAudit(parameterDto.getArticleId());
+                try {
+                    if (ArticleTaskType.ARTICLE_AUDIT.equals(item.getTaskType())){
+                        articleCoreClient.postAudit(articleId);
                         log.info("articleCoreClient.postAudit success");
                         markSuccess(item.getId());
 
-                    } catch (Exception e){
-                        log.warn("task {} audit rpc failed", item.getId(), e);
-                        markFailRetryable(item.getId(), "articleCoreClient.postAudit error:{}" + e.getMessage());
+                    } else if (ArticleTaskType.ARTICLE_PUBLISH.equals(item.getTaskType())){
+                        articleCoreClient.postPublish(articleId);
+                        log.info("articleCoreClient.postPublish success");
+                        markSuccess(item.getId());
                     }
+
+                } catch (Exception e){
+                    log.warn("task {} audit rpc failed", item.getId(), e);
+                    markFailRetryable(item.getId(), "articleCoreClient.postAudit error:{}" + e.getMessage());
                 }
 
             });
@@ -137,13 +166,13 @@ public class ScheduleTaskServiceImpl extends ServiceImpl<ScheduleTaskMapper, Sch
         scheduleTaskMapper.markFailUnrecoverable(taskId, TaskStatusEnum.FAIL.getCode(), TaskStatusEnum.RUNNING.getCode(), errorMsg);
     }
 
-    private ScheduleTask buildTaskByAction(Long articleId, Date publishTime, String action){
+    private ScheduleTask buildTask(Long articleId, Date executeTime, String action){
         ScheduleTask task = new ScheduleTask();
         task.setTaskType(action);
         task.setBizKey(TaskUtil.getBizKey(action, articleId));
-        task.setExecuteTime(publishTime);
+        task.setExecuteTime(executeTime);
 
-        ArticleParameterDto parameterDto = new ArticleParameterDto(articleId, publishTime);
+        ArticleParameterDto parameterDto = new ArticleParameterDto(articleId, action);
 
         task.setParameters(JSON.toJSONString(parameterDto));
 
