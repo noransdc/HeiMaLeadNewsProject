@@ -1,12 +1,18 @@
 package com.heima.article.core.controller.v1;
 
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.heima.article.core.service.ArticleAuditService;
 import com.heima.article.core.service.ArticleChannelService;
 import com.heima.article.core.service.ArticleService;
+import com.heima.model.articlecore.dto.ArticleDetailDto;
+import com.heima.model.articlecore.dto.ArticlePageDto;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
+import com.heima.model.articlecore.entity.Article;
 import com.heima.model.articlecore.entity.ArticleChannel;
+import com.heima.model.articlecore.vo.ArticleVo;
 import com.heima.model.common.dtos.PageRequestDto;
+import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -51,5 +57,16 @@ public class ArticleInternalController {
     public void postPublish(@PathVariable Long articleId){
         articleService.callPublish(articleId);
     }
+
+    @PostMapping("/list")
+    public PageResponseResult<List<ArticleVo>> getArticleList(@RequestBody ArticlePageDto dto){
+        return articleService.getPageList(dto);
+    }
+
+    @GetMapping("/detail/{id}")
+    public ArticleVo getArticleVo(@PathVariable Long id){
+        return articleService.getArticleVo(id);
+    }
+
 
 }

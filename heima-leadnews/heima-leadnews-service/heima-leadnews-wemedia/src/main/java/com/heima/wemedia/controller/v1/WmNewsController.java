@@ -21,19 +21,20 @@ public class WmNewsController {
 
     @PostMapping("/list")
     public ResponseResult findList(@RequestBody WmNewsPageReqDto dto){
-        return wmNewsService.findList(dto);
+//        return wmNewsService.findList(dto);
+        return wmNewsService.getPageListRemote(dto);
     }
 
     @PostMapping("/submit")
     public ResponseResult submitNews(@RequestBody WmNewsDto dto){
 //        return wmNewsService.submitNews(dto);
-        wmNewsService.postSaveNews(dto);
+        wmNewsService.submitRemote(dto);
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
 
     @GetMapping("/one/{id}")
-    public ResponseResult selectOne(@PathVariable Integer id){
-        return wmNewsService.findOne(id);
+    public ResponseResult selectOne(@PathVariable Long id){
+        return ResponseResult.okResult(wmNewsService.getArticleVo(id));
     }
 
     @PostMapping("/down_or_up")

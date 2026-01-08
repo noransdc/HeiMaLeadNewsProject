@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 
@@ -44,13 +45,13 @@ public class ScheduleTask {
     private String errorMsg;
 
     @TableField("create_time")
-    private Date createTime;
+    private LocalDateTime createTime;
 
     @TableField("update_time")
-    private Date updateTime;
+    private LocalDateTime updateTime;
 
     @TableField("lock_time")
-    private Date lockTime;
+    private LocalDateTime lockTime;
 
     @TableField("lock_owner")
     private String lockOwner;

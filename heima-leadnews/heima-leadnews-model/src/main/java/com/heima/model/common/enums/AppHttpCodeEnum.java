@@ -33,11 +33,13 @@ public enum AppHttpCodeEnum {
     FILE_TOO_LARGE(4004, "文件过大"),
 
     READ_FILE_FAILED(4002, "读取文件失败"),
+    AUTHOR_ID_NULL(5005, "作者id为null"),
 
-    RPC_AUTHOR_ID_NULL(4005, "作者id为null"),
-    RPC_PARAM_INVALID(4006, "无效参数"),
-    RPC_CHANNEL_NOT_EXIST(4007, "频道不存在"),
-    RPC_CHANNEL_DISABLE(4008, "频道不可用"),
+
+    RPC_AUTHOR_ID_NULL(5005, "作者id为null"),
+    RPC_PARAM_INVALID(5006, "无效参数"),
+    RPC_CHANNEL_NOT_EXIST(5007, "频道不存在"),
+    RPC_CHANNEL_DISABLE(5008, "频道不可用"),
 
     ;
 

@@ -2,6 +2,10 @@ package com.heima.article.core.service.impl;
 
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.apis.schedule.ScheduleTaskClient;
 import com.heima.common.constants.ArticleTaskType;
@@ -15,15 +19,14 @@ import com.heima.common.enums.ArticleAuditEnum;
 import com.heima.common.enums.ArticleCoverEnum;
 import com.heima.common.enums.ArticlePublishRspEnum;
 import com.heima.common.exception.CustomException;
-import com.heima.model.articlecore.dto.ArticleAuditRsp;
-import com.heima.model.articlecore.dto.ArticleDetailDto;
-import com.heima.model.articlecore.dto.ArticleTaskDto;
-import com.heima.model.articlecore.dto.ArticleSubmitDto;
+import com.heima.model.articlecore.dto.*;
 import com.heima.model.articlecore.entity.Article;
 import com.heima.model.articlecore.entity.ArticleContent;
 import com.heima.model.articlecore.entity.ArticleContentItem;
 import com.heima.model.articlecore.event.ArticleTaskCreatedEvent;
+import com.heima.model.articlecore.vo.ArticleVo;
 import com.heima.model.common.dtos.PageRequestDto;
+import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
 import com.heima.model.schedule.dto.ArticleParameterDto;
@@ -42,7 +45,10 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -92,6 +98,92 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         applicationEventPublisher.publishEvent(new ArticleTaskCreatedEvent(article));
 
+    }
+
+    @Override
+    public PageResponseResult<List<ArticleVo>> getPageList(ArticlePageDto dto) {
+        if (dto.getAuthorId() == null){
+            throw new CustomException(AppHttpCodeEnum.RPC_AUTHOR_ID_NULL);
+        }
+
+        dto.checkParam();
+
+        dto.setSize(50);
+
+        LambdaQueryWrapper<Article> query = new LambdaQueryWrapper<>();
+
+        query.eq(Article::getAuthorId, dto.getAuthorId());
+
+        if (dto.getChannelId() != null){
+            query.eq(Article::getChannelId, dto.getChannelId());
+        }
+
+        if (dto.getStatus() != null){
+            query.eq(Article::getAuditStatus, dto.getStatus());
+        }
+
+        if (StringUtils.isNotBlank(dto.getKeyword())){
+            query.like(Article::getTitle, dto.getKeyword());
+        }
+
+        LocalDate startDay = dto.getBeginPubDate();
+        LocalDate endDay = dto.getEndPubDate();
+        if (startDay != null && endDay != null){
+            LocalDateTime startTime = startDay.atStartOfDay();
+            LocalDateTime endTime = endDay.plusDays(1).atStartOfDay();
+            query.ge(Article::getPublishTime, startTime)
+                    .lt(Article::getPublishTime, endTime);
+        }
+
+        query.eq(Article::getIsDelete, 0)
+                .eq(Article::getIsEnabled, 1)
+                .orderByDesc(Article::getPublishTime);
+
+        log.info("dto.getPage:{}", dto.getPage());
+        log.info("dto.getSize:{}", dto.getSize());
+
+        IPage<Article> result = page(new Page<>(dto.getPage(), dto.getSize()), query);
+
+        log.info("getPageList.size:{}", result.getRecords().size());
+        log.info("getPageList:{}", result.getRecords());
+        log.info("result.size:{}", result.getSize());
+
+        List<ArticleVo> voList = new ArrayList<>();
+        for (Article article : result.getRecords()) {
+            ArticleVo articleVo = new ArticleVo();
+            BeanUtils.copyProperties(article, articleVo);
+            articleVo.setImages(article.getCoverImgUrl());
+            voList.add(articleVo);
+        }
+
+        PageResponseResult<List<ArticleVo>> pageResult = new PageResponseResult<>(dto.getPage(), dto.getSize(), (int)result.getTotal());
+        pageResult.setData(voList);
+
+        return pageResult;
+    }
+
+    @Override
+    public Article getOne(Long id) {
+        if (id == null){
+            throw new CustomException(AppHttpCodeEnum.RPC_AUTHOR_ID_NULL);
+        }
+
+        Article article = lambdaQuery().eq(Article::getId, id)
+                .eq(Article::getIsDelete, 0)
+                .eq(Article::getIsEnabled, 1)
+                .one();
+
+        return article;
+    }
+
+    @Override
+    public ArticleVo getArticleVo(Long id) {
+        ArticleDetailDto articleDetail = getArticleDetail(id);
+        ArticleVo articleVo = new ArticleVo();
+        BeanUtils.copyProperties(articleDetail.getArticle(), articleVo);
+        articleVo.setContent(articleDetail.getArticleContent().getContent());
+        articleVo.setImages(articleDetail.getArticle().getCoverImgUrl());
+        return articleVo;
     }
 
     @Override
@@ -163,7 +255,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (articleId == null) {
             throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID);
         }
-        Article article = getById(articleId);
+        Article article = lambdaQuery().eq(Article::getId, articleId)
+                .eq(Article::getIsDelete, 0)
+                .eq(Article::getIsEnabled, 1)
+                .one();
 
         ArticleContent articleContent = articleContentMapper.selectById(articleId);
 

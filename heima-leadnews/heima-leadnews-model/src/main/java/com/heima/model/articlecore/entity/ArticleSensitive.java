@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 
@@ -22,13 +23,13 @@ public class ArticleSensitive {
     private Integer isDelete;
 
     @TableField("delete_time")
-    private Date deleteTime;
+    private LocalDateTime deleteTime;
 
     @TableField("create_time")
-    private Date createTime;
+    private LocalDateTime createTime;
 
     @TableField("update_time")
-    private Date updateTime;
+    private LocalDateTime updateTime;
 
 
 }

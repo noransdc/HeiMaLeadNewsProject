@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 
@@ -46,22 +47,22 @@ public class Article {
     private Integer isDelete;
 
     @TableField("delete_time")
-    private Date deleteTime;
+    private LocalDateTime deleteTime;
 
     @TableField("is_enabled")
     private Integer isEnabled;
 
     @TableField("create_time")
-    private Date createTime;
+    private LocalDateTime createTime;
 
     @TableField("publish_time")
-    private Date publishTime;
+    private LocalDateTime publishTime;
 
     @TableField("last_edit_time")
-    private Date lastEditTime;
+    private LocalDateTime lastEditTime;
 
     @TableField("update_time")
-    private Date updateTime;
+    private LocalDateTime updateTime;
 
 
 }

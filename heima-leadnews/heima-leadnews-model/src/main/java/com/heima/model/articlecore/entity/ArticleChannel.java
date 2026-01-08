@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 
 @Data
 @TableName("article_channel")
@@ -31,10 +33,10 @@ public class ArticleChannel {
     private Integer sort;
 
     @TableField("create_time")
-    private Integer createTime;
+    private LocalDateTime createTime;
 
     @TableField("update_time")
-    private Integer updateTime;
+    private LocalDateTime updateTime;
 
 
 

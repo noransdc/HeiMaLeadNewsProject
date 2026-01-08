@@ -2,6 +2,7 @@ package com.heima.model.articlecore.dto;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -20,7 +21,7 @@ public class ArticleSubmitDto {
      */
     private Long authorId;
 
-    private Date publishTime;
+    private LocalDateTime publishTime;
 
     //文章封面类型  0无图  1单图  3多图  -1自动
     private Integer coverType;

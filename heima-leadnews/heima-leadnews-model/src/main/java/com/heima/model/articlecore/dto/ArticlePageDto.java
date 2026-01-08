@@ -1,4 +1,4 @@
-package com.heima.model.wemedia.dtos;
+package com.heima.model.articlecore.dto;
 
 import com.heima.model.common.dtos.PageRequestDto;
 import lombok.Data;
@@ -7,8 +7,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 
+
 @Data
-public class WmNewsPageReqDto extends PageRequestDto {
+public class ArticlePageDto extends PageRequestDto {
+
 
     /**
      * 状态
@@ -30,4 +32,9 @@ public class WmNewsPageReqDto extends PageRequestDto {
      * 关键字
      */
     private String keyword;
+
+    //
+    private Long authorId;
+
+
 }

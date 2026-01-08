@@ -12,7 +12,11 @@ import com.heima.common.constants.WeMediaConstants;
 import com.heima.common.constants.WmNewsMessageConstants;
 import com.heima.common.exception.CustomException;
 import com.heima.model.article.pojos.ApArticleEnable;
+import com.heima.model.articlecore.dto.ArticleDetailDto;
+import com.heima.model.articlecore.dto.ArticlePageDto;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
+import com.heima.model.articlecore.entity.Article;
+import com.heima.model.articlecore.vo.ArticleVo;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
@@ -77,6 +81,15 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
     }
 
     @Override
+    public ArticleVo getArticleVo(Long id) {
+        if (id == null){
+            throw new CustomException(AppHttpCodeEnum.AUTHOR_ID_NULL);
+        }
+        ArticleVo detail = articleCoreClient.getArticleDetail(id);
+        return detail;
+    }
+
+    @Override
     public ResponseResult findList(WmNewsPageReqDto dto) {
         dto.checkParam();
 
@@ -113,6 +126,18 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
         result.setData(voList);
 
         return result;
+    }
+
+    @Override
+    public PageResponseResult<List<ArticleVo>> getPageListRemote(WmNewsPageReqDto dto) {
+        WmUser wmUser = WmThreadLocalUtil.getUser();
+        if (wmUser == null){
+            throw new CustomException(AppHttpCodeEnum.USER_NOT_EXIST);
+        }
+        ArticlePageDto articlePageDto = new ArticlePageDto();
+        BeanUtils.copyProperties(dto, articlePageDto);
+        articlePageDto.setAuthorId((long)wmUser.getId());
+        return articleCoreClient.getPageList(articlePageDto);
     }
 
     @Override
@@ -330,7 +355,7 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 
 
     @Override
-    public void postSaveNews(WmNewsDto dto) {
+    public void submitRemote(WmNewsDto dto) {
         if (dto == null){
             throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
         }

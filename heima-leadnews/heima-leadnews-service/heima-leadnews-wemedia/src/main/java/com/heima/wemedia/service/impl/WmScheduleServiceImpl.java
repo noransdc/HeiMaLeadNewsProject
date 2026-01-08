@@ -17,6 +17,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 
@@ -33,11 +34,11 @@ public class WmScheduleServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> imp
 
     @Override
     @Async
-    public void addNewsToTask(Integer id, Date publishTime) {
+    public void addNewsToTask(Integer id, LocalDateTime publishTime) {
         Task task = new Task();
         task.setTaskType(TaskTypeEnum.NEWS_SCAN_TIME.getTaskType());
         task.setPriority(TaskTypeEnum.NEWS_SCAN_TIME.getPriority());
-        task.setExecuteTime(publishTime.getTime());
+//        task.setExecuteTime(publishTime.getTime());
         WmNews wmNews = new WmNews();
         wmNews.setId(id);
         byte[] bytes = ProtostuffUtil.serialize(wmNews);
@@ -47,7 +48,7 @@ public class WmScheduleServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> imp
     }
 
 
-    @Scheduled(cron = "*/30 * * * * ?")
+//    @Scheduled(cron = "0 0/3 * * * ?")
     public void pollTask(){
         Integer type = TaskTypeEnum.NEWS_SCAN_TIME.getTaskType();
         Integer priority = TaskTypeEnum.NEWS_SCAN_TIME.getPriority();

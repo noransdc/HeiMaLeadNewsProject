@@ -3,6 +3,7 @@ package com.heima.model.articlecore.dto;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 
@@ -11,7 +12,7 @@ public class ArticleTaskDto {
 
 
     private Long articleId;
-    private Date publishTime;
+    private LocalDateTime publishTime;
     private String action;
     private String parameters;
 

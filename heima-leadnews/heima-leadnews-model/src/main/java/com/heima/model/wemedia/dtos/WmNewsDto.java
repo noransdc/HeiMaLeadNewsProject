@@ -2,6 +2,7 @@ package com.heima.model.wemedia.dtos;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class WmNewsDto {
      /**
      * 发布时间
      */
-    private Date publishTime;
+    private LocalDateTime publishTime;
      /**
      * 文章内容
      */

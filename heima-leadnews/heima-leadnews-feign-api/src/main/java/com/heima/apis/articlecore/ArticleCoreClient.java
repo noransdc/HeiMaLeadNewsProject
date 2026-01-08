@@ -1,9 +1,15 @@
 package com.heima.apis.articlecore;
 
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.heima.model.articlecore.dto.ArticleDetailDto;
+import com.heima.model.articlecore.dto.ArticlePageDto;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
+import com.heima.model.articlecore.entity.Article;
 import com.heima.model.articlecore.entity.ArticleChannel;
+import com.heima.model.articlecore.vo.ArticleVo;
 import com.heima.model.common.dtos.PageRequestDto;
+import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,5 +37,12 @@ public interface ArticleCoreClient {
 
     @PostMapping("/internal/article/publish/{articleId}")
     void postPublish(@PathVariable Long articleId);
+
+    @PostMapping("/internal/article/list")
+    PageResponseResult<List<ArticleVo>> getPageList(@RequestBody ArticlePageDto dto);
+
+    @GetMapping("/internal/article/detail/{id}")
+    ArticleVo getArticleDetail(@PathVariable Long id);
+
 
 }
