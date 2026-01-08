@@ -24,8 +24,6 @@ import java.util.Map;
 @Slf4j
 public class WmNewsTest {
 
-    @Autowired
-    private WmScheduleService wmScheduleService;
 
     @Autowired
     private WmNewsService wmNewsService;
@@ -37,7 +35,7 @@ public class WmNewsTest {
     @Test
     public void testTaskFeign() {
         Integer id = 6281;
-        wmScheduleService.addNewsToTask(id, new Date());
+//        wmScheduleService.addNewsToTask(id, new Date());
     }
 
     @Test

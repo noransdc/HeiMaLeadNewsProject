@@ -15,9 +15,9 @@ import java.util.List;
 
 public interface WmNewsService extends IService<WmNews> {
 
-    ResponseResult findList( WmNewsPageReqDto dto);
-
-    ResponseResult submitNews(WmNewsDto dto);
+//    ResponseResult findList( WmNewsPageReqDto dto);
+//
+//    ResponseResult submitNews(WmNewsDto dto);
 
 
     ResponseResult findOne(Integer id);

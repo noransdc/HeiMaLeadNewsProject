@@ -12,10 +12,8 @@ import com.heima.common.constants.WeMediaConstants;
 import com.heima.common.constants.WmNewsMessageConstants;
 import com.heima.common.exception.CustomException;
 import com.heima.model.article.pojos.ApArticleEnable;
-import com.heima.model.articlecore.dto.ArticleDetailDto;
 import com.heima.model.articlecore.dto.ArticlePageDto;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
-import com.heima.model.articlecore.entity.Article;
 import com.heima.model.articlecore.vo.ArticleVo;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.common.dtos.ResponseResult;
@@ -23,16 +21,12 @@ import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.wemedia.dtos.*;
 import com.heima.model.wemedia.pojos.WmMaterial;
 import com.heima.model.wemedia.pojos.WmNews;
-import com.heima.model.wemedia.pojos.WmNewsMaterial;
 import com.heima.model.wemedia.pojos.WmUser;
-import com.heima.model.wemedia.vo.WmNewsListVo;
 import com.heima.thread.WmThreadLocalUtil;
 import com.heima.wemedia.mapper.WmMaterialMapper;
 import com.heima.wemedia.mapper.WmNewsMapper;
 import com.heima.wemedia.mapper.WmNewsMaterialMapper;
-import com.heima.wemedia.service.WmAutoScanService;
 import com.heima.wemedia.service.WmNewsService;
-import com.heima.wemedia.service.WmScheduleService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -42,7 +36,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -55,12 +52,6 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 
     @Autowired
     private WmNewsMaterialMapper wmNewsMaterialMapper;
-
-    @Autowired
-    private WmAutoScanService wmAutoScanService;
-
-    @Autowired
-    private WmScheduleService wmScheduleService;
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
@@ -89,44 +80,44 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
         return detail;
     }
 
-    @Override
-    public ResponseResult findList(WmNewsPageReqDto dto) {
-        dto.checkParam();
-
-        LambdaQueryWrapper<WmNews> wrapper = new LambdaQueryWrapper<>();
-
-        if (dto.getStatus() != null) {
-            wrapper.eq(WmNews::getStatus, dto.getStatus());
-        }
-
-        if (StringUtils.isNotBlank(dto.getKeyword())) {
-            wrapper.like(WmNews::getTitle, dto.getKeyword());
-        }
-
-        if (dto.getChannelId() != null) {
-            wrapper.eq(WmNews::getChannelId, dto.getChannelId());
-        }
-
-        if (dto.getBeginPubDate() != null && dto.getEndPubDate() != null) {
-            wrapper.between(WmNews::getPublishTime, dto.getBeginPubDate(), dto.getEndPubDate());
-        }
-
-        wrapper.eq(WmNews::getUserId, WmThreadLocalUtil.getUser().getId());
-        wrapper.orderByDesc(WmNews::getCreatedTime);
-
-        Page<WmNews> page = page(new Page<>(dto.getPage(), dto.getSize()), wrapper);
-
-        List<WmNewsListVo> voList = page.getRecords().stream().map(item -> {
-            WmNewsListVo vo = new WmNewsListVo();
-            BeanUtils.copyProperties(item, vo);
-            return vo;
-        }).collect(Collectors.toList());
-
-        PageResponseResult result = new PageResponseResult(dto.getPage(), dto.getSize(), (int) page.getTotal());
-        result.setData(voList);
-
-        return result;
-    }
+//    @Override
+//    public ResponseResult findList(WmNewsPageReqDto dto) {
+//        dto.checkParam();
+//
+//        LambdaQueryWrapper<WmNews> wrapper = new LambdaQueryWrapper<>();
+//
+//        if (dto.getStatus() != null) {
+//            wrapper.eq(WmNews::getStatus, dto.getStatus());
+//        }
+//
+//        if (StringUtils.isNotBlank(dto.getKeyword())) {
+//            wrapper.like(WmNews::getTitle, dto.getKeyword());
+//        }
+//
+//        if (dto.getChannelId() != null) {
+//            wrapper.eq(WmNews::getChannelId, dto.getChannelId());
+//        }
+//
+//        if (dto.getBeginPubDate() != null && dto.getEndPubDate() != null) {
+//            wrapper.between(WmNews::getPublishTime, dto.getBeginPubDate(), dto.getEndPubDate());
+//        }
+//
+//        wrapper.eq(WmNews::getUserId, WmThreadLocalUtil.getUser().getId());
+//        wrapper.orderByDesc(WmNews::getCreatedTime);
+//
+//        Page<WmNews> page = page(new Page<>(dto.getPage(), dto.getSize()), wrapper);
+//
+//        List<WmNewsListVo> voList = page.getRecords().stream().map(item -> {
+//            WmNewsListVo vo = new WmNewsListVo();
+//            BeanUtils.copyProperties(item, vo);
+//            return vo;
+//        }).collect(Collectors.toList());
+//
+//        PageResponseResult result = new PageResponseResult(dto.getPage(), dto.getSize(), (int) page.getTotal());
+//        result.setData(voList);
+//
+//        return result;
+//    }
 
     @Override
     public PageResponseResult<List<ArticleVo>> getPageListRemote(WmNewsPageReqDto dto) {
@@ -140,68 +131,68 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
         return articleCoreClient.getPageList(articlePageDto);
     }
 
-    @Override
-    public ResponseResult submitNews(WmNewsDto dto) {
-        if (dto == null || dto.getType() == null) {
-            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
-        }
-
-        String content = dto.getContent();
-        if (StringUtils.isEmpty(content)) {
-            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
-        }
-
-        WmNews wmNews = new WmNews();
-        BeanUtils.copyProperties(dto, wmNews);
-
-        List<String> contentUrlList = parseImgUrlList(content);
-        List<String> coverUrlList = getCoverUrlList(dto, contentUrlList);
-
-        if (!CollectionUtils.isEmpty(coverUrlList)) {
-            wmNews.setImages(StringUtils.join(coverUrlList, ","));
-            if (coverUrlList.size() == 3) {
-                wmNews.setType(WeMediaConstants.WM_NEWS_MANY_IMAGE);
-            } else if (coverUrlList.size() == 1) {
-                wmNews.setType(WeMediaConstants.WM_NEWS_SINGLE_IMAGE);
-            } else {
-                wmNews.setType(WeMediaConstants.WM_NEWS_NONE_IMAGE);
-            }
-        } else {
-            wmNews.setType(WeMediaConstants.WM_NEWS_NONE_IMAGE);
-        }
-
-        List<WmMaterial> contentMaterialList = getMaterialList(contentUrlList);
-        List<WmMaterial> coverMaterialList = getMaterialList(coverUrlList);
-
-        wmNews.setUserId(WmThreadLocalUtil.getUser().getId());
-        Date now = new Date();
-        wmNews.setCreatedTime(now);
-        wmNews.setSubmitedTime(now);
-        wmNews.setEnable((short) 1);
-
-        if (wmNews.getId() == null) {
-            wmNews.setReason("审核中");
-            save(wmNews);
-        } else {
-            LambdaQueryWrapper<WmNewsMaterial> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(WmNewsMaterial::getNewsId, wmNews.getId());
-            wmNewsMaterialMapper.delete(wrapper);
-            updateById(wmNews);
-        }
-
-        if (!contentMaterialList.isEmpty()) {
-            saveRelation(contentMaterialList, wmNews, WeMediaConstants.WM_CONTENT_REFERENCE);
-        }
-
-        if (!coverMaterialList.isEmpty()) {
-            saveRelation(coverMaterialList, wmNews, WeMediaConstants.WM_COVER_REFERENCE);
-        }
-
-//        wmAutoScanService.autoScanWmNews(wmNews.getId());
-        wmScheduleService.addNewsToTask(wmNews.getId(), dto.getPublishTime());
-
-        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
-    }
+//    @Override
+//    public ResponseResult submitNews(WmNewsDto dto) {
+//        if (dto == null || dto.getType() == null) {
+//            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+//        }
+//
+//        String content = dto.getContent();
+//        if (StringUtils.isEmpty(content)) {
+//            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+//        }
+//
+//        WmNews wmNews = new WmNews();
+//        BeanUtils.copyProperties(dto, wmNews);
+//
+//        List<String> contentUrlList = parseImgUrlList(content);
+//        List<String> coverUrlList = getCoverUrlList(dto, contentUrlList);
+//
+//        if (!CollectionUtils.isEmpty(coverUrlList)) {
+//            wmNews.setImages(StringUtils.join(coverUrlList, ","));
+//            if (coverUrlList.size() == 3) {
+//                wmNews.setType(WeMediaConstants.WM_NEWS_MANY_IMAGE);
+//            } else if (coverUrlList.size() == 1) {
+//                wmNews.setType(WeMediaConstants.WM_NEWS_SINGLE_IMAGE);
+//            } else {
+//                wmNews.setType(WeMediaConstants.WM_NEWS_NONE_IMAGE);
+//            }
+//        } else {
+//            wmNews.setType(WeMediaConstants.WM_NEWS_NONE_IMAGE);
+//        }
+//
+//        List<WmMaterial> contentMaterialList = getMaterialList(contentUrlList);
+//        List<WmMaterial> coverMaterialList = getMaterialList(coverUrlList);
+//
+//        wmNews.setUserId(WmThreadLocalUtil.getUser().getId());
+//        Date now = new Date();
+//        wmNews.setCreatedTime(now);
+//        wmNews.setSubmitedTime(now);
+//        wmNews.setEnable((short) 1);
+//
+//        if (wmNews.getId() == null) {
+//            wmNews.setReason("审核中");
+//            save(wmNews);
+//        } else {
+//            LambdaQueryWrapper<WmNewsMaterial> wrapper = new LambdaQueryWrapper<>();
+//            wrapper.eq(WmNewsMaterial::getNewsId, wmNews.getId());
+//            wmNewsMaterialMapper.delete(wrapper);
+//            updateById(wmNews);
+//        }
+//
+//        if (!contentMaterialList.isEmpty()) {
+//            saveRelation(contentMaterialList, wmNews, WeMediaConstants.WM_CONTENT_REFERENCE);
+//        }
+//
+//        if (!coverMaterialList.isEmpty()) {
+//            saveRelation(coverMaterialList, wmNews, WeMediaConstants.WM_COVER_REFERENCE);
+//        }
+//
+////        wmAutoScanService.autoScanWmNews(wmNews.getId());
+//        wmScheduleService.addNewsToTask(wmNews.getId(), dto.getPublishTime());
+//
+//        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+//    }
 
     @Override
     public ResponseResult downOrUp(WmNewsDto dto) {
