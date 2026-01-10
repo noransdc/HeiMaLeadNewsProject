@@ -20,28 +20,28 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 
 
-@FeignClient(value = "leadnews-article-core")
+@FeignClient(name = "leadnews-article-core",
+        path = "/internal/article",
+        contextId = "articleCoreClient"
+)
 public interface ArticleCoreClient {
 
-    @PostMapping("/internal/article/add")
+    @PostMapping("/add")
     void submit(@RequestBody ArticleSubmitDto dto);
 
-    @GetMapping("/internal/article/channel/list")
-    List<ArticleChannel> getChannelList();
-
-    @PostMapping("/internal/article/pending-audit-ids")
+    @PostMapping("/pending-audit-ids")
     List<ArticleAuditCompensateDto> getArticleAuditCompensateList(@RequestBody PageRequestDto dto);
 
-    @PostMapping("/internal/article/audit/{articleId}")
+    @PostMapping("/audit/{articleId}")
     void postAudit(@PathVariable Long articleId);
 
-    @PostMapping("/internal/article/publish/{articleId}")
+    @PostMapping("/publish/{articleId}")
     void postPublish(@PathVariable Long articleId);
 
-    @PostMapping("/internal/article/list")
+    @PostMapping("/page/list")
     PageResponseResult<List<ArticleVo>> getPageList(@RequestBody ArticlePageDto dto);
 
-    @GetMapping("/internal/article/detail/{id}")
+    @GetMapping("/detail/{id}")
     ArticleVo getArticleDetail(@PathVariable Long id);
 
 

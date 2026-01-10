@@ -1,9 +1,7 @@
 package com.heima.article.core.service;
 
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.heima.common.enums.ArticlePublishRspEnum;
 import com.heima.model.articlecore.dto.ArticleDetailDto;
 import com.heima.model.articlecore.dto.ArticlePageDto;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
@@ -27,9 +25,9 @@ public interface ArticleService extends IService<Article> {
 
     List<ArticleAuditCompensateDto> getArticleAuditCompensateList(PageRequestDto dto);
 
-    void callAudit(Long articleId);
+    void audit(Long articleId);
 
-    void callPublish(Long articleId);
+    void publish(Long articleId);
 
     PageResponseResult<List<ArticleVo>> getPageList(ArticlePageDto dto);
 

@@ -32,6 +32,12 @@ public class ArticleChannel {
     @TableField("sort")
     private Integer sort;
 
+    @TableField("is_delete")
+    private Integer isDelete;
+
+    @TableField("delete_time")
+    private LocalDateTime deleteTime;
+
     @TableField("create_time")
     private LocalDateTime createTime;
 

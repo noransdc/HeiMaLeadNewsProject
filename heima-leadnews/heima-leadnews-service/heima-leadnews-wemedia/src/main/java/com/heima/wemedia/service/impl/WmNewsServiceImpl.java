@@ -292,28 +292,28 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 
     }
 
-    @Override
-    public IPage<WmNews> pageList(WmNewsAdminPageDto dto) {
-
-        LambdaQueryWrapper<WmNews> query = Wrappers.lambdaQuery();
-
-        if (StringUtils.isNotBlank(dto.getTitle())) {
-            query.and(w -> w.like(WmNews::getTitle, dto.getTitle()))
-                    .or().like(WmNews::getContent, dto.getTitle());
-        }
-
-        if (dto.getStatus() != null) {
-            query.eq(WmNews::getStatus, dto.getStatus());
-        }
-
-        query.eq(WmNews::getEnable, 1)
-                .orderByDesc(WmNews::getCreatedTime);
-
-        IPage<WmNews> iPage = new Page<>(dto.getPage(), dto.getSize());
-        IPage<WmNews> pageResult = page(iPage, query);
-
-        return pageResult;
-    }
+//    @Override
+//    public IPage<WmNews> pageList(WmNewsAdminPageDto dto) {
+//
+//        LambdaQueryWrapper<WmNews> query = Wrappers.lambdaQuery();
+//
+//        if (StringUtils.isNotBlank(dto.getTitle())) {
+//            query.and(w -> w.like(WmNews::getTitle, dto.getTitle()))
+//                    .or().like(WmNews::getContent, dto.getTitle());
+//        }
+//
+//        if (dto.getStatus() != null) {
+//            query.eq(WmNews::getStatus, dto.getStatus());
+//        }
+//
+//        query.eq(WmNews::getEnable, 1)
+//                .orderByDesc(WmNews::getCreatedTime);
+//
+//        IPage<WmNews> iPage = new Page<>(dto.getPage(), dto.getSize());
+//        IPage<WmNews> pageResult = page(iPage, query);
+//
+//        return pageResult;
+//    }
 
     @Override
     public void authFail(WmNewsAuthFailDto dto) {

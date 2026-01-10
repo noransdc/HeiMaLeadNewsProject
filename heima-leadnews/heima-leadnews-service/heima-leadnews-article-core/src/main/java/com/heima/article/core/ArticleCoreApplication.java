@@ -1,6 +1,7 @@
 package com.heima.article.core;
 
 
+import com.heima.apis.config.FeignConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -11,7 +12,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableAsync
-@EnableFeignClients("com.heima.apis")
+@EnableFeignClients(
+        basePackages = "com.heima.apis",
+        defaultConfiguration = FeignConfig.class
+)
 public class ArticleCoreApplication {
 
 

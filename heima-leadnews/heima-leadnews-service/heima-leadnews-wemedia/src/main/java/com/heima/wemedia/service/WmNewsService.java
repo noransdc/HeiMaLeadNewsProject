@@ -24,8 +24,6 @@ public interface WmNewsService extends IService<WmNews> {
 
     ResponseResult downOrUp( WmNewsDto dto);
 
-    IPage<WmNews> pageList(WmNewsAdminPageDto dto);
-
     void authFail(WmNewsAuthFailDto dto);
 
     void authPass(WmNewsAuthPassDto dto);

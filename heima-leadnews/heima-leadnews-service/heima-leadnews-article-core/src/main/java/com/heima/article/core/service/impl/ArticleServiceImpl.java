@@ -73,6 +73,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Autowired
     private ArticleAuditService articleAuditService;
 
+    @Autowired
+    private ArticleMapper articleMapper;
+
 
     @Transactional
     @Override
@@ -107,8 +110,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
 
         dto.checkParam();
-
-        dto.setSize(50);
 
         LambdaQueryWrapper<Article> query = new LambdaQueryWrapper<>();
 
@@ -187,7 +188,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    public void callAudit(Long articleId) {
+    public void audit(Long articleId) {
         try {
             ArticleDetailDto articleDetail = getArticleDetail(articleId);
             if (articleDetail.getArticle().getAuditStatus() != ArticleAuditEnum.PENDING_AUDIT.getCode()){
@@ -205,7 +206,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    public void callPublish(Long articleId) {
+    public void publish(Long articleId) {
         Article article = getById(articleId);
         if (article.getAuditStatus() != ArticleAuditEnum.AUDIT_SUCCESS.getCode()){
             throw new ResponseStatusException(HttpStatus.CONFLICT, "not ready");

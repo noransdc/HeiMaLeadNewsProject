@@ -2,6 +2,7 @@ package com.heima.schedule;
 
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
+import com.heima.apis.config.FeignConfig;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -16,7 +17,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableDiscoveryClient
 @MapperScan("com.heima.schedule.mapper")
 @EnableScheduling
-@EnableFeignClients("com.heima.apis")
+@EnableFeignClients(
+        basePackages = "com.heima.apis",
+        defaultConfiguration = FeignConfig.class
+)
 public class ScheduleApplication {
 
     public static void main(String[] args) {

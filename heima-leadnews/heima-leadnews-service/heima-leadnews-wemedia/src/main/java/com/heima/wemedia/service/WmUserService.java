@@ -12,7 +12,7 @@ public interface WmUserService extends IService<WmUser> {
      * @param dto
      * @return
      */
-    public ResponseResult login(WmLoginDto dto);
+    ResponseResult login(WmLoginDto dto);
 
     WmUser getUser(Integer id);
 

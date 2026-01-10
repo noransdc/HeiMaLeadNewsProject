@@ -26,6 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -55,9 +57,9 @@ public class ScheduleTaskServiceImpl extends ServiceImpl<ScheduleTaskMapper, Sch
             return;
         }
 
-        Date now = new Date();
-        Date publishTime = dto.getPublishTime();
-        Date executeTime = publishTime.after(now) ? publishTime : now;
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime publishTime = dto.getPublishTime();
+        LocalDateTime executeTime = publishTime.isAfter(now) ? publishTime : now;
 
         ScheduleTask auditTask = buildTask(dto.getArticleId(), now, ArticleTaskType.ARTICLE_AUDIT);
         save(auditTask);
@@ -79,9 +81,9 @@ public class ScheduleTaskServiceImpl extends ServiceImpl<ScheduleTaskMapper, Sch
         }
 
         for (ArticleAuditCompensateDto item : list) {
-            Date now = new Date();
-            Date publishTime = item.getPublishTime();
-            Date executeTime = publishTime.after(now) ? publishTime : now;
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime publishTime = item.getPublishTime();
+            LocalDateTime executeTime = publishTime.isAfter(now) ? publishTime : now;
 
             ScheduleTask auditTask = buildTask(item.getArticleId(), now, ArticleTaskType.ARTICLE_AUDIT);
             try {
@@ -102,7 +104,7 @@ public class ScheduleTaskServiceImpl extends ServiceImpl<ScheduleTaskMapper, Sch
 
     }
 
-    @Scheduled(initialDelay = 20 * 1000, fixedDelay = 1 * 60 * 1000)
+    @Scheduled(initialDelay = 20 * 1000, fixedDelay = 2 * 60 * 1000)
     public void scanAuditExecutableTasks(){
         int active = taskExecutor.getActiveCount();
         int core = taskExecutor.getCorePoolSize();
@@ -166,7 +168,7 @@ public class ScheduleTaskServiceImpl extends ServiceImpl<ScheduleTaskMapper, Sch
         scheduleTaskMapper.markFailUnrecoverable(taskId, TaskStatusEnum.FAIL.getCode(), TaskStatusEnum.RUNNING.getCode(), errorMsg);
     }
 
-    private ScheduleTask buildTask(Long articleId, Date executeTime, String action){
+    private ScheduleTask buildTask(Long articleId, LocalDateTime executeTime, String action){
         ScheduleTask task = new ScheduleTask();
         task.setTaskType(action);
         task.setBizKey(TaskUtil.getBizKey(action, articleId));

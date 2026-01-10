@@ -27,7 +27,7 @@ public class ScheduleTask {
     private String bizKey;
 
     @TableField("execute_time")
-    private Date executeTime;
+    private LocalDateTime executeTime;
 
     @TableField("status")
     private Integer status;

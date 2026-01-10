@@ -1,17 +1,16 @@
-package com.heima.model.articlecore.vo;
+package com.heima.model.articlecore.dto;
 
 
 import lombok.Data;
 
 @Data
-public class ChannelVo {
+public class ArticleChannelAddDto {
 
 
-    private Long id;
     private String name;
     private String description;
     private Integer ord;
-
+    private Boolean status;
 
 
 }

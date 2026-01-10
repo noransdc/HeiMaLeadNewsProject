@@ -6,7 +6,6 @@ import com.heima.common.constants.WmNewsMessageConstants;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.wemedia.dtos.WmNewsDto;
 import com.heima.wemedia.service.WmNewsService;
-import com.heima.wemedia.service.WmScheduleService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;

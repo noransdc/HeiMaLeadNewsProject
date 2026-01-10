@@ -21,13 +21,11 @@ public class WmNewsController {
 
     @PostMapping("/list")
     public ResponseResult findList(@RequestBody WmNewsPageReqDto dto){
-//        return wmNewsService.findList(dto);
         return wmNewsService.getPageListRemote(dto);
     }
 
     @PostMapping("/submit")
     public ResponseResult submitNews(@RequestBody WmNewsDto dto){
-//        return wmNewsService.submitNews(dto);
         wmNewsService.submitRemote(dto);
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
@@ -40,14 +38,6 @@ public class WmNewsController {
     @PostMapping("/down_or_up")
     public ResponseResult downOrUp(@RequestBody WmNewsDto dto){
         return wmNewsService.downOrUp(dto);
-    }
-
-    @PostMapping("/list_vo")
-    public ResponseResult pageList(@RequestBody WmNewsAdminPageDto dto){
-        IPage<WmNews> iPage = wmNewsService.pageList(dto);
-        PageResponseResult result = new PageResponseResult(dto.getPage(), dto.getSize(), (int)iPage.getTotal());
-        result.setData(iPage.getRecords());
-        return result;
     }
 
     @GetMapping("/one_vo/{id}")
