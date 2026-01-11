@@ -2,14 +2,12 @@ package com.heima.behavior.service.impl;
 
 import com.heima.behavior.service.BehaviorService;
 import com.heima.common.exception.CustomException;
-import com.heima.common.redis.CacheService;
 import com.heima.model.behavior.dto.*;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.user.pojos.ApUser;
 import com.heima.thread.AppThreadLocalUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 
@@ -17,11 +15,11 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class BehaviorServiceImpl implements BehaviorService {
 
-    @Autowired
-    private CacheService cacheService;
+//    @Autowired
+//    private CacheService cacheService;
 
-    @Autowired
-    private StringRedisTemplate stringRedisTemplate;
+//    @Autowired
+//    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public void like(LikeBehaviorDto dto) {
@@ -55,11 +53,11 @@ public class BehaviorServiceImpl implements BehaviorService {
                 break;
         }
 
-        if (dto.getOperation() == 1){
-            cacheService.sAdd(key, value);
-        } else {
-            cacheService.sRemove(key, value);
-        }
+//        if (dto.getOperation() == 1){
+//            cacheService.sAdd(key, value);
+//        } else {
+//            cacheService.sRemove(key, value);
+//        }
 
     }
 
@@ -77,11 +75,11 @@ public class BehaviorServiceImpl implements BehaviorService {
         String key = "dislike:article:" + dto.getArticleId();
         String value = user.getId().toString();
 
-        if (dto.getType() == 1){
-            cacheService.sAdd(key, value);
-        } else {
-            cacheService.sRemove(key, value);
-        }
+//        if (dto.getType() == 1){
+//            cacheService.sAdd(key, value);
+//        } else {
+//            cacheService.sRemove(key, value);
+//        }
 
     }
 
@@ -98,7 +96,7 @@ public class BehaviorServiceImpl implements BehaviorService {
 
         String key = "read:article:" + dto.getArticleId();
 //        cacheService.incrBy(key, 1);
-        stringRedisTemplate.opsForValue().increment(key, 1);
+//        stringRedisTemplate.opsForValue().increment(key, 1);
 
     }
 

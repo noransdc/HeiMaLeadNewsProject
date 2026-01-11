@@ -4,7 +4,6 @@ package com.heima.article.listener;
 import com.alibaba.fastjson.JSON;
 import com.heima.article.service.ApArticleService;
 import com.heima.common.constants.HotArticleConstants;
-import com.heima.common.redis.CacheService;
 import com.heima.model.article.pojos.ArticleVisitStreamMsg;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

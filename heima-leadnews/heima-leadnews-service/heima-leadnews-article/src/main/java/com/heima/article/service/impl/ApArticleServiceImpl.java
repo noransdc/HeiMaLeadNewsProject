@@ -11,7 +11,7 @@ import com.heima.article.mapper.ApArticleMapper;
 import com.heima.article.service.ApArticleService;
 import com.heima.article.service.ArticleFreemarkerService;
 import com.heima.common.constants.ArticleConstants;
-import com.heima.common.redis.CacheService;
+import com.heima.article.redis.CacheService;
 import com.heima.model.article.dtos.ArticleDto;
 import com.heima.model.article.dtos.ArticleHomeDto;
 import com.heima.model.article.pojos.ApArticle;
@@ -33,7 +33,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @Transactional
