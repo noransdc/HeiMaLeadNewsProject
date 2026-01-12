@@ -4,7 +4,9 @@ package com.heima.article.core.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.heima.model.articlecore.dto.*;
 import com.heima.model.articlecore.entity.Article;
+import com.heima.model.articlecore.vo.AdminArticleDetailVo;
 import com.heima.model.articlecore.vo.AdminArticleListVo;
+import com.heima.model.articlecore.vo.AuthorArticleDetailVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.dtos.PageResponseResult;
@@ -35,5 +37,8 @@ public interface ArticleService extends IService<Article> {
     void manualAuditReject(ArticleAuthFailDto dto);
 
     void manualAuditPass(Long articleId);
+
+    AuthorArticleDetailVo detailForAuthor(Long articleId);
+
 
 }

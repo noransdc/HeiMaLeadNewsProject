@@ -24,6 +24,7 @@ import com.heima.model.articlecore.entity.ArticleContent;
 import com.heima.model.articlecore.entity.ArticleContentItem;
 import com.heima.model.articlecore.event.ArticleTaskCreatedEvent;
 import com.heima.model.articlecore.vo.AdminArticleListVo;
+import com.heima.model.articlecore.vo.AuthorArticleDetailVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.dtos.PageResponseResult;
@@ -445,6 +446,32 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         return StringUtils.join(limitList, ",");
     }
+
+    @Override
+    public AuthorArticleDetailVo detailForAuthor(Long articleId) {
+        if (articleId == null){
+            throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
+        }
+
+        Article article = lambdaQuery().eq(Article::getId, articleId)
+                .eq(Article::getIsDelete, 0)
+                .eq(Article::getIsEnabled, 1)
+                .one();
+
+        if (article == null){
+            throw new CustomException(AppHttpCodeEnum.PARAM_INVALID, "文章不存在");
+        }
+
+        ArticleContent articleContent = articleContentMapper.selectById(articleId);
+
+        if (articleContent == null){
+            throw new CustomException(AppHttpCodeEnum.PARAM_INVALID, "文章不存在");
+        }
+
+        return ArticleConvert.toAuthorDetailVo(article, articleContent);
+    }
+
+
 
 
 }

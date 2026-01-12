@@ -1,11 +1,10 @@
 package com.heima.wemedia.controller.v1;
 
 
-import com.heima.model.articlecore.dto.ArticleAuthFailDto;
-import com.heima.model.articlecore.dto.ArticleAuthPassDto;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
-import com.heima.model.wemedia.dtos.*;
+import com.heima.model.wemedia.dtos.WmNewsDto;
+import com.heima.model.wemedia.dtos.WmNewsPageReqDto;
 import com.heima.wemedia.service.WmNewsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -29,32 +28,15 @@ public class WmNewsController {
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
 
-//    @GetMapping("/one/{id}")
-//    public ResponseResult selectOne(@PathVariable Long id){
-//        return ResponseResult.okResult(wmNewsService.getArticleVo(id));
-//    }
+    @GetMapping("/one/{id}")
+    public ResponseResult selectOne(@PathVariable Long id){
+        return ResponseResult.okResult(wmNewsService.getArticleVo(id));
+    }
 
     @PostMapping("/down_or_up")
     public ResponseResult downOrUp(@RequestBody WmNewsDto dto){
         return wmNewsService.downOrUp(dto);
     }
-
-    @GetMapping("/one_vo/{id}")
-    public ResponseResult getOne(@PathVariable Integer id){
-        return wmNewsService.findOne(id);
-    }
-
-//    @PostMapping("/auth_fail")
-//    public ResponseResult authFailed(@RequestBody ArticleAuthFailDto dto){
-//        wmNewsService.authFail(dto);
-//        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
-//    }
-//
-//    @PostMapping("/auth_pass")
-//    public ResponseResult authPass(@RequestBody ArticleAuthPassDto dto){
-//        wmNewsService.authPass(dto);
-//        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
-//    }
 
 
 }

@@ -6,6 +6,7 @@ import com.heima.article.core.service.ArticleService;
 import com.heima.model.articlecore.dto.*;
 import com.heima.model.articlecore.entity.Article;
 import com.heima.model.articlecore.vo.AdminArticleListVo;
+import com.heima.model.articlecore.vo.AuthorArticleDetailVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.dtos.PageResponseResult;
@@ -52,9 +53,8 @@ public class ArticleCoreInternalController {
     }
 
     @GetMapping("/detail/{id}")
-    public AuthorArticleListVo detailForAuthor(@PathVariable Long id){
-        Article article = articleService.getArticle(id);
-        return ArticleConvert.toAuthorListVo(article);
+    public AuthorArticleDetailVo detailForAuthor(@PathVariable Long id){
+        return articleService.detailForAuthor(id);
     }
 
     @PostMapping("/admin/page")
@@ -63,9 +63,8 @@ public class ArticleCoreInternalController {
     }
 
     @GetMapping("/admin/{id}")
-    public AdminArticleListVo forAdmin(@PathVariable Long id){
-        Article article = articleService.getArticle(id);
-        return ArticleConvert.toAdminListVo(article);
+    public AuthorArticleDetailVo forAdmin(@PathVariable Long id){
+        return articleService.detailForAuthor(id);
     }
 
     @PostMapping("/admin/auth_fail")

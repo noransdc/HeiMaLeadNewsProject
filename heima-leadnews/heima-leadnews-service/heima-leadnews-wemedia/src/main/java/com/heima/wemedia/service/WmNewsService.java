@@ -4,6 +4,7 @@ package com.heima.wemedia.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.heima.model.articlecore.dto.ArticleAuthFailDto;
 import com.heima.model.articlecore.dto.ArticleAuthPassDto;
+import com.heima.model.articlecore.vo.AuthorArticleDetailVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.common.dtos.ResponseResult;
@@ -15,23 +16,13 @@ import java.util.List;
 
 public interface WmNewsService extends IService<WmNews> {
 
-//    ResponseResult findList( WmNewsPageReqDto dto);
-//
-//    ResponseResult submitNews(WmNewsDto dto);
-
-
-    ResponseResult findOne(Integer id);
 
     ResponseResult downOrUp( WmNewsDto dto);
-
-    void authFail(ArticleAuthFailDto dto);
-
-    void authPass(ArticleAuthPassDto dto);
 
     void submitRemote(WmNewsDto dto);
 
     PageResponseResult<List<AuthorArticleListVo>> getPageListRemote(WmNewsPageReqDto dto);
 
-    AuthorArticleListVo getArticleVo(Long id);
+    AuthorArticleDetailVo getArticleVo(Long articleId);
 
 }

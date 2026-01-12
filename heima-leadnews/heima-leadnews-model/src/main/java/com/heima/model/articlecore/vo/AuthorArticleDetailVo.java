@@ -14,12 +14,14 @@ public class AuthorArticleDetailVo {
     private Long authorId;
     private String title;
     private String content;
-    private String images;
-    private String label;
     private Long channelId;
     private Integer status;
-    private LocalDateTime createdTime;
     private LocalDateTime publishTime;
 
+
+    private String labels;
+    private String images;
+    private LocalDateTime createdTime;
+    private Integer type;
 
 }

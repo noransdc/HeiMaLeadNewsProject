@@ -2,7 +2,9 @@ package com.heima.apis.articlecore;
 
 
 import com.heima.model.articlecore.dto.*;
+import com.heima.model.articlecore.vo.AdminArticleDetailVo;
 import com.heima.model.articlecore.vo.AdminArticleListVo;
+import com.heima.model.articlecore.vo.AuthorArticleDetailVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.dtos.PageResponseResult;
@@ -39,13 +41,13 @@ public interface ArticleCoreClient {
     PageResponseResult<List<AuthorArticleListVo>> pageForAuthor(@RequestBody AuthorArticlePageDto dto);
 
     @GetMapping("/detail/{id}")
-    AuthorArticleListVo getArticleDetail(@PathVariable Long id);
+    AuthorArticleDetailVo detailForAuthor(@PathVariable Long id);
 
     @PostMapping("/admin/page")
     PageResponseResult<List<AdminArticleListVo>> pageForAdmin(@RequestBody AdminArticlePageDto dto);
 
     @GetMapping("/admin/{id}")
-    AdminArticleListVo forAdmin(@PathVariable Long id);
+    AuthorArticleDetailVo forAdmin(@PathVariable Long id);
 
     @PostMapping("/admin/auth_fail")
     void manualAuditReject(@RequestBody ArticleAuthFailDto dto);

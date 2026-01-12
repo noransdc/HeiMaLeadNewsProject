@@ -6,6 +6,7 @@ import com.heima.apis.wemedia.WeMediaClient;
 import com.heima.model.articlecore.dto.AdminArticlePageDto;
 import com.heima.model.articlecore.dto.ArticleAuthFailDto;
 import com.heima.model.articlecore.vo.AdminArticleListVo;
+import com.heima.model.articlecore.vo.AuthorArticleDetailVo;
 import com.heima.model.common.dtos.PageResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,7 +48,7 @@ public class AdminArticleServiceImpl implements AdminArticleService {
     }
 
     @Override
-    public AdminArticleListVo forAdmin(Long id) {
+    public AuthorArticleDetailVo forAdmin(Long id) {
         return articleCoreClient.forAdmin(id);
     }
 

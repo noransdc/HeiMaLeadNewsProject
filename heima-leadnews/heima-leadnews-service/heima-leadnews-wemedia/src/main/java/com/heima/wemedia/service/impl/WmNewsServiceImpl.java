@@ -13,6 +13,7 @@ import com.heima.model.articlecore.dto.AuthorArticlePageDto;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
 import com.heima.model.articlecore.dto.ArticleAuthFailDto;
 import com.heima.model.articlecore.dto.ArticleAuthPassDto;
+import com.heima.model.articlecore.vo.AuthorArticleDetailVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.common.dtos.ResponseResult;
@@ -60,63 +61,13 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 
 
     @Override
-    public ResponseResult findOne(Integer id) {
-        if (id == null || id <= 0) {
-            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+    public AuthorArticleDetailVo getArticleVo(Long articleId) {
+        if (articleId == null){
+            throw new CustomException(AppHttpCodeEnum.PARAM_INVALID, "文章id不能为null");
         }
-        WmNews wmNews = lambdaQuery()
-                .eq(WmNews::getId, id)
-                .one();
-        return ResponseResult.okResult(wmNews);
+        return articleCoreClient.detailForAuthor(articleId);
     }
 
-    @Override
-    public AuthorArticleListVo getArticleVo(Long id) {
-        if (id == null){
-            throw new CustomException(AppHttpCodeEnum.AUTHOR_ID_NULL);
-        }
-        AuthorArticleListVo detail = articleCoreClient.getArticleDetail(id);
-        return detail;
-    }
-
-//    @Override
-//    public ResponseResult findList(WmNewsPageReqDto dto) {
-//        dto.checkParam();
-//
-//        LambdaQueryWrapper<WmNews> wrapper = new LambdaQueryWrapper<>();
-//
-//        if (dto.getStatus() != null) {
-//            wrapper.eq(WmNews::getStatus, dto.getStatus());
-//        }
-//
-//        if (StringUtils.isNotBlank(dto.getKeyword())) {
-//            wrapper.like(WmNews::getTitle, dto.getKeyword());
-//        }
-//
-//        if (dto.getChannelId() != null) {
-//            wrapper.eq(WmNews::getChannelId, dto.getChannelId());
-//        }
-//
-//        if (dto.getBeginPubDate() != null && dto.getEndPubDate() != null) {
-//            wrapper.between(WmNews::getPublishTime, dto.getBeginPubDate(), dto.getEndPubDate());
-//        }
-//
-//        wrapper.eq(WmNews::getUserId, WmThreadLocalUtil.getUser().getId());
-//        wrapper.orderByDesc(WmNews::getCreatedTime);
-//
-//        Page<WmNews> page = page(new Page<>(dto.getPage(), dto.getSize()), wrapper);
-//
-//        List<WmNewsListVo> voList = page.getRecords().stream().map(item -> {
-//            WmNewsListVo vo = new WmNewsListVo();
-//            BeanUtils.copyProperties(item, vo);
-//            return vo;
-//        }).collect(Collectors.toList());
-//
-//        PageResponseResult result = new PageResponseResult(dto.getPage(), dto.getSize(), (int) page.getTotal());
-//        result.setData(voList);
-//
-//        return result;
-//    }
 
     @Override
     public PageResponseResult<List<AuthorArticleListVo>> getPageListRemote(WmNewsPageReqDto dto) {
@@ -314,34 +265,6 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 //        return pageResult;
 //    }
 
-    @Override
-    public void authFail(ArticleAuthFailDto dto) {
-        WmNews wmNews = getById(dto.getId());
-        if (wmNews == null){
-            throw new CustomException(AppHttpCodeEnum.DATA_NOT_EXIST);
-        }
-
-        if (dto.getMsg() != null){
-            wmNews.setReason(dto.getMsg());
-        }
-
-        wmNews.setStatus(WmNews.Status.FAIL.getCode());
-
-        updateById(wmNews);
-
-    }
-
-    @Override
-    public void authPass(ArticleAuthPassDto dto) {
-        WmNews wmNews = getById(dto.getId());
-        if (wmNews == null){
-            throw new CustomException(AppHttpCodeEnum.DATA_NOT_EXIST);
-        }
-
-        wmNews.setStatus(WmNews.Status.SUCCESS.getCode());
-
-        updateById(wmNews);
-    }
 
 
     @Override
