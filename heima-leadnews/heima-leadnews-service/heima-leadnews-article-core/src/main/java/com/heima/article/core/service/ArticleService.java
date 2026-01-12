@@ -11,6 +11,7 @@ import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
+import com.heima.model.wemedia.dtos.WmNewsDto;
 
 import java.util.List;
 
@@ -39,6 +40,8 @@ public interface ArticleService extends IService<Article> {
     void manualAuditPass(Long articleId);
 
     AuthorArticleDetailVo detailForAuthor(Long articleId);
+
+    void downOrUp(WmNewsDto dto);
 
 
 }

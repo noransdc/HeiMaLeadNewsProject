@@ -1,60 +1,35 @@
 package com.heima.wemedia.service.impl;
 
 
-import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.apis.articlecore.ArticleCoreClient;
-import com.heima.common.constants.WeMediaConstants;
-import com.heima.common.constants.WmNewsMessageConstants;
 import com.heima.common.exception.CustomException;
-import com.heima.model.article.pojos.ApArticleEnable;
-import com.heima.model.articlecore.dto.AuthorArticlePageDto;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
-import com.heima.model.articlecore.dto.ArticleAuthFailDto;
-import com.heima.model.articlecore.dto.ArticleAuthPassDto;
+import com.heima.model.articlecore.dto.AuthorArticlePageDto;
 import com.heima.model.articlecore.vo.AuthorArticleDetailVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.PageResponseResult;
-import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
-import com.heima.model.wemedia.dtos.*;
-import com.heima.model.wemedia.pojos.WmMaterial;
+import com.heima.model.wemedia.dtos.WmNewsDto;
+import com.heima.model.wemedia.dtos.WmNewsPageReqDto;
 import com.heima.model.wemedia.pojos.WmNews;
 import com.heima.model.wemedia.pojos.WmUser;
 import com.heima.thread.WmThreadLocalUtil;
-import com.heima.wemedia.mapper.WmMaterialMapper;
 import com.heima.wemedia.mapper.WmNewsMapper;
-import com.heima.wemedia.mapper.WmNewsMaterialMapper;
 import com.heima.wemedia.service.WmNewsService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 
 @Service
 @Slf4j
 public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> implements WmNewsService {
 
-    @Autowired
-    private WmMaterialMapper wmMaterialMapper;
-
-    @Autowired
-    private WmNewsMaterialMapper wmNewsMaterialMapper;
-
-    @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
 
     @Autowired
     private ArticleCoreClient articleCoreClient;
@@ -77,7 +52,7 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
         }
         AuthorArticlePageDto authorArticlePageDto = new AuthorArticlePageDto();
         BeanUtils.copyProperties(dto, authorArticlePageDto);
-        authorArticlePageDto.setAuthorId((long)wmUser.getId());
+        authorArticlePageDto.setAuthorId(wmUser.getId());
         return articleCoreClient.pageForAuthor(authorArticlePageDto);
     }
 
@@ -144,127 +119,12 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 //        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
 //    }
 
-    @Override
-    public ResponseResult downOrUp(WmNewsDto dto) {
-        if (dto == null || dto.getId() == null) {
-            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, "参数错误");
-        }
-
-        WmNews wmNews = getById(dto.getId());
-        if (wmNews == null) {
-            return ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST, "文章不存在");
-        }
-
-        if (WmNews.Status.PUBLISHED.getCode() != wmNews.getStatus()) {
-            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, "文章未上架");
-        }
-
-        Short enable = dto.getEnable();
-        if (enable == null || (enable != 0 && enable != 1)) {
-            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, "参数错误");
-        }
-
-        lambdaUpdate().set(WmNews::getEnable, enable)
-                .eq(WmNews::getId, dto.getId())
-                .update();
-
-        if (wmNews.getArticleId() != null) {
-            ApArticleEnable apArticleEnable = new ApArticleEnable();
-            apArticleEnable.setArticleId(wmNews.getArticleId());
-            apArticleEnable.setEnable(enable);
-            kafkaTemplate.send(WmNewsMessageConstants.WM_NEWS_UP_OR_DOWN_TOPIC, JSON.toJSONString(apArticleEnable));
-            log.info("kafka send:{}", JSON.toJSONString(apArticleEnable));
-        }
-
-        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
-    }
-
-    private List<String> getCoverUrlList(WmNewsDto dto, List<String> contentUrlList) {
-        Short dtoType = dto.getType();
-        List<String> dtoCoverImages = dto.getImages();
-
-        List<String> coverUrlList = null;
-        if (Objects.equals(dtoType, WeMediaConstants.WM_NEWS_TYPE_AUTO)) {
-            if (contentUrlList.size() >= 3) {
-                coverUrlList = contentUrlList.stream().limit(3).collect(Collectors.toList());
-            } else if (contentUrlList.size() >= 1) {
-                coverUrlList = contentUrlList.stream().limit(1).collect(Collectors.toList());
-            }
-
-        } else if (Objects.equals(dtoType, WeMediaConstants.WM_NEWS_SINGLE_IMAGE)) {
-            if (CollectionUtils.isEmpty(dtoCoverImages) || dtoCoverImages.size() != 1) {
-                throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
-            }
-            coverUrlList = dtoCoverImages;
-
-        } else if (Objects.equals(dtoType, WeMediaConstants.WM_NEWS_MANY_IMAGE)) {
-            if (CollectionUtils.isEmpty(dtoCoverImages) || dtoCoverImages.size() != 3) {
-                throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
-
-            }
-            coverUrlList = dtoCoverImages;
-        }
-
-        return coverUrlList;
-    }
-
-    private List<String> parseImgUrlList(String content) {
-        List<Map> maps = JSON.parseArray(content, Map.class);
-        List<String> urlList = new ArrayList<>();
-        for (Map map : maps) {
-            if (Objects.equals(map.get("type"), "image")) {
-                String url = (String) map.get("value");
-                urlList.add(url);
-            }
-        }
-        return urlList;
-    }
-
-    @Nonnull
-    private List<WmMaterial> getMaterialList(List<String> urlList) {
-        if (CollectionUtils.isEmpty(urlList)) {
-            return new ArrayList<>();
-        }
-//        List<WmMaterial> list = wmMaterialMapper.getValidList(urlList);
-        LambdaQueryWrapper<WmMaterial> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(WmMaterial::getUrl, urlList);
-        List<WmMaterial> list = wmMaterialMapper.selectList(wrapper);
-        if (CollectionUtils.isEmpty(list) || list.size() != urlList.size()) {
-            throw new CustomException(AppHttpCodeEnum.MATERIAL_REFERENCE_FAIL);
-        }
-        return list;
-    }
-
 
 //    private void saveRelation(List<WmMaterial> materialList, WmNews wmNews, Short type) {
 //        List<Integer> idList = materialList.stream().map(WmMaterial::getId).collect(Collectors.toList());
 //        wmNewsMaterialMapper.saveRelations(idList, wmNews.getId(), type);
 //
 //    }
-
-//    @Override
-//    public IPage<WmNews> pageList(WmNewsAdminPageDto dto) {
-//
-//        LambdaQueryWrapper<WmNews> query = Wrappers.lambdaQuery();
-//
-//        if (StringUtils.isNotBlank(dto.getTitle())) {
-//            query.and(w -> w.like(WmNews::getTitle, dto.getTitle()))
-//                    .or().like(WmNews::getContent, dto.getTitle());
-//        }
-//
-//        if (dto.getStatus() != null) {
-//            query.eq(WmNews::getStatus, dto.getStatus());
-//        }
-//
-//        query.eq(WmNews::getEnable, 1)
-//                .orderByDesc(WmNews::getCreatedTime);
-//
-//        IPage<WmNews> iPage = new Page<>(dto.getPage(), dto.getSize());
-//        IPage<WmNews> pageResult = page(iPage, query);
-//
-//        return pageResult;
-//    }
-
 
 
     @Override

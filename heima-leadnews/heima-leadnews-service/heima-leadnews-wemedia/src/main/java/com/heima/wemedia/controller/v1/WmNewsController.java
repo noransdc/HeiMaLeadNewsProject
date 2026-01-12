@@ -33,10 +33,5 @@ public class WmNewsController {
         return ResponseResult.okResult(wmNewsService.getArticleVo(id));
     }
 
-    @PostMapping("/down_or_up")
-    public ResponseResult downOrUp(@RequestBody WmNewsDto dto){
-        return wmNewsService.downOrUp(dto);
-    }
-
 
 }

@@ -17,8 +17,6 @@ import java.util.List;
 public interface WmNewsService extends IService<WmNews> {
 
 
-    ResponseResult downOrUp( WmNewsDto dto);
-
     void submitRemote(WmNewsDto dto);
 
     PageResponseResult<List<AuthorArticleListVo>> getPageListRemote(WmNewsPageReqDto dto);

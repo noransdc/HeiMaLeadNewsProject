@@ -15,9 +15,11 @@ import com.heima.article.core.service.ArticleAuditService;
 import com.heima.article.core.service.ArticleChannelService;
 import com.heima.article.core.service.ArticleService;
 import com.heima.common.constants.ArticleConstants;
+import com.heima.common.constants.WmNewsMessageConstants;
 import com.heima.common.enums.ArticleAuditEnum;
 import com.heima.common.enums.ArticleCoverEnum;
 import com.heima.common.exception.CustomException;
+import com.heima.model.article.pojos.ApArticleEnable;
 import com.heima.model.articlecore.dto.*;
 import com.heima.model.articlecore.entity.Article;
 import com.heima.model.articlecore.entity.ArticleContent;
@@ -28,8 +30,11 @@ import com.heima.model.articlecore.vo.AuthorArticleDetailVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.dtos.PageResponseResult;
+import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
+import com.heima.model.wemedia.dtos.WmNewsDto;
+import com.heima.model.wemedia.pojos.WmNews;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -472,6 +477,39 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
 
+    @Override
+    public void downOrUp(WmNewsDto dto) {
+        if (dto == null || dto.getId() == null) {
+            throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
+        }
+
+        Article wmNews = getById(dto.getId());
+        if (wmNews == null) {
+            throw new CustomException(AppHttpCodeEnum.DATA_NOT_EXIST, "文章不存在");
+        }
+
+        if (WmNews.Status.PUBLISHED.getCode() != wmNews.getAuditStatus()) {
+            throw new CustomException(AppHttpCodeEnum.PARAM_INVALID, "文章未上架");
+        }
+
+        Short enable = dto.getEnable();
+        if (enable == null || (enable != 0 && enable != 1)) {
+            throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
+        }
+
+        lambdaUpdate().set(Article::getIsEnabled, enable)
+                .eq(Article::getId, dto.getId())
+                .update();
+
+//        if (wmNews.getArticleId() != null) {
+//            ApArticleEnable apArticleEnable = new ApArticleEnable();
+//            apArticleEnable.setArticleId(wmNews.getArticleId());
+//            apArticleEnable.setEnable(enable);
+//            kafkaTemplate.send(WmNewsMessageConstants.WM_NEWS_UP_OR_DOWN_TOPIC, JSON.toJSONString(apArticleEnable));
+//            log.info("kafka send:{}", JSON.toJSONString(apArticleEnable));
+//        }
+
+    }
 
 
 }
