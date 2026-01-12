@@ -195,11 +195,10 @@ public class ApUserServiceImpl extends ServiceImpl<ApUserMapper, ApUser> impleme
         if (apUser == null){
             throw new CustomException(AppHttpCodeEnum.USER_NOT_EXIST);
         }
-        Integer userId = apUser.getId();
 
         if (operation == 1){
             ApUserCollection apUserCollection = new ApUserCollection();
-            apUserCollection.setUserId((long)userId);
+            apUserCollection.setUserId(apUser.getId());
             apUserCollection.setArticleId(articleId);
             apUserCollection.setCreatedTime(new Date());
 
@@ -212,7 +211,7 @@ public class ApUserServiceImpl extends ServiceImpl<ApUserMapper, ApUser> impleme
 
         } else {
             LambdaQueryWrapper<ApUserCollection> query = Wrappers.lambdaQuery();
-            query.eq(ApUserCollection::getUserId, userId)
+            query.eq(ApUserCollection::getUserId, apUser.getId())
                     .eq(ApUserCollection::getArticleId, articleId);
             apUserCollectionMapper.delete(query);
         }

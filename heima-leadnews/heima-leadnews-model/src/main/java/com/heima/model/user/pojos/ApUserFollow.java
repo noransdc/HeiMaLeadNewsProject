@@ -17,10 +17,10 @@ public class ApUserFollow {
     private Long id;
 
     @TableField("user_id")
-    private Integer userId;
+    private Long userId;
 
     @TableField("follow_id")
-    private Integer followId;
+    private Long followId;
 
     @TableField("follow_name")
     private String followName;

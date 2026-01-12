@@ -283,11 +283,11 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
     }
 
 
-    private void saveRelation(List<WmMaterial> materialList, WmNews wmNews, Short type) {
-        List<Integer> idList = materialList.stream().map(WmMaterial::getId).collect(Collectors.toList());
-        wmNewsMaterialMapper.saveRelations(idList, wmNews.getId(), type);
-
-    }
+//    private void saveRelation(List<WmMaterial> materialList, WmNews wmNews, Short type) {
+//        List<Integer> idList = materialList.stream().map(WmMaterial::getId).collect(Collectors.toList());
+//        wmNewsMaterialMapper.saveRelations(idList, wmNews.getId(), type);
+//
+//    }
 
 //    @Override
 //    public IPage<WmNews> pageList(WmNewsAdminPageDto dto) {

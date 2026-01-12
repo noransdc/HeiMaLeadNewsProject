@@ -5,6 +5,9 @@ import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.wemedia.dtos.WmLoginDto;
 import com.heima.model.wemedia.pojos.WmUser;
 
+import java.util.List;
+import java.util.Map;
+
 public interface WmUserService extends IService<WmUser> {
 
     /**
@@ -15,5 +18,7 @@ public interface WmUserService extends IService<WmUser> {
     ResponseResult login(WmLoginDto dto);
 
     WmUser getUser(Integer id);
+
+    Map<Long, String> getAuthorNameMap(List<Long> ids);
 
 }

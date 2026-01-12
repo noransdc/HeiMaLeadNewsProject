@@ -26,7 +26,7 @@ public class WmTokenInterceptor implements HandlerInterceptor {
         String userId = request.getHeader("userId");
         if (userId != null){
             WmUser wmUser = new WmUser();
-            wmUser.setId(Integer.parseInt(userId));
+            wmUser.setId(Long.parseLong(userId));
             WmThreadLocalUtil.setUser(wmUser);
         }
 

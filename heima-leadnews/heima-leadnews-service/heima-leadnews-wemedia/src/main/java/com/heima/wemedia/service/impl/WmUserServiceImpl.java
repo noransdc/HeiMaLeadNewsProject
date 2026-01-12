@@ -11,9 +11,12 @@ import com.heima.wemedia.mapper.WmUserMapper;
 import com.heima.wemedia.service.WmUserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -39,7 +42,7 @@ public class WmUserServiceImpl extends ServiceImpl<WmUserMapper, WmUser> impleme
         if(pswd.equals(wmUser.getPassword())){
             //4.返回数据  jwt
             Map<String,Object> map  = new HashMap<>();
-            map.put("token", AppJwtUtil.getToken(wmUser.getId().longValue()));
+            map.put("token", AppJwtUtil.getToken(wmUser.getId()));
             wmUser.setSalt("");
             wmUser.setPassword("");
             map.put("user",wmUser);
@@ -55,6 +58,27 @@ public class WmUserServiceImpl extends ServiceImpl<WmUserMapper, WmUser> impleme
         WmUser user = getById(id);
         return user;
     }
+
+    @Override
+    public Map<Long, String> getAuthorNameMap(List<Long> ids) {
+        if (CollectionUtils.isEmpty(ids)){
+            return Collections.emptyMap();
+        }
+
+        List<WmUser> list = lambdaQuery()
+                .in(WmUser::getId, ids)
+                .list();
+
+        Map<Long, String> map = new HashMap<>(list.size());
+
+        for (WmUser wmUser : list) {
+            map.put(wmUser.getId(), wmUser.getName());
+        }
+
+        return map;
+    }
+
+
 
 
 }

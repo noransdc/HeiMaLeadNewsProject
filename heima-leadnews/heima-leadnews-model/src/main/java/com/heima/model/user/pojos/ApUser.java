@@ -26,7 +26,7 @@ public class ApUser implements Serializable {
      * 主键
      */
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private Long id;
 
     /**
      * 密码、通信等加密盐

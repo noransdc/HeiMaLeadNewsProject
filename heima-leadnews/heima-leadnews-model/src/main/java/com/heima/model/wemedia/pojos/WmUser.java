@@ -26,7 +26,7 @@ public class WmUser implements Serializable {
      * 主键
      */
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private Long id;
 
     @TableField("ap_user_id")
     private Integer apUserId;
