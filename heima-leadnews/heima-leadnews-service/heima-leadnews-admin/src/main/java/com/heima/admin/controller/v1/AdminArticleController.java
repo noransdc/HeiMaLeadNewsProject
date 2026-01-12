@@ -36,10 +36,6 @@ public class AdminArticleController {
 //        return null;
 //    }
 //
-//    @GetMapping("/one_vo/{id}")
-//    public ResponseResult getOne(@PathVariable Integer id){
-//        return null;
-//    }
 
     @PostMapping("/auth_fail")
     public ResponseResult manualAuditReject(@RequestBody ArticleAuthFailDto dto){
