@@ -199,21 +199,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    public Article getArticle(Long id) {
-        if (id == null){
-            throw new CustomException(AppHttpCodeEnum.RPC_AUTHOR_ID_NULL);
-        }
-
-        Article article = lambdaQuery().eq(Article::getId, id)
-                .eq(Article::getIsDelete, 0)
-                .eq(Article::getIsEnabled, 1)
-                .one();
-
-        return article;
-    }
-
-
-    @Override
     public void audit(Long articleId) {
         if (articleId == null) {
             throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID);

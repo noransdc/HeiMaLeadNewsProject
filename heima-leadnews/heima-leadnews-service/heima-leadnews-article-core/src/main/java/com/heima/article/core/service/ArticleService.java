@@ -29,8 +29,6 @@ public interface ArticleService extends IService<Article> {
 
     void publish(Long articleId);
 
-    Article getArticle(Long id);
-
     PageResponseResult<List<AuthorArticleListVo>> pageOwnArticles(AuthorArticlePageDto dto);
 
     PageResponseResult<List<AdminArticleListVo>> pageAllArticles(AdminArticlePageDto dto);
