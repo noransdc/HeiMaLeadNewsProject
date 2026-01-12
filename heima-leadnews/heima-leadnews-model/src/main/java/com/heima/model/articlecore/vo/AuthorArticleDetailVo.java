@@ -23,5 +23,8 @@ public class AuthorArticleDetailVo {
     private String images;
     private LocalDateTime createdTime;
     private Integer type;
+    private String authorName;
+    private LocalDateTime updateTime;
+
 
 }

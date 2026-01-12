@@ -128,6 +128,7 @@ public final class ArticleConvert {
         vo.setImages(article.getCoverImgUrl());
         vo.setType(article.getCoverType());
         vo.setLabels(article.getLabel());
+        vo.setUpdateTime(article.getUpdateTime());
 
         vo.setContent(articleContent.getContent());
 

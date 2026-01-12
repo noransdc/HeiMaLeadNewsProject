@@ -26,9 +26,9 @@ public class AdminArticleController {
         return adminArticleService.pageForAdmin(dto);
     }
 
-    @GetMapping("/one/{id}")
-    public ResponseResult forAdmin(@PathVariable Long id){
-        return ResponseResult.okResult(adminArticleService.forAdmin(id));
+    @GetMapping("/one_vo/{id}")
+    public ResponseResult detailForAdmin(@PathVariable Long id){
+        return ResponseResult.okResult(adminArticleService.detailForAdmin(id));
     }
 
 //    @PostMapping("/down_or_up")

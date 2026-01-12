@@ -16,7 +16,7 @@ public interface AdminArticleService {
 
     PageResponseResult<List<AdminArticleListVo>> pageForAdmin(AdminArticlePageDto dto);
 
-    AuthorArticleDetailVo forAdmin(Long id);
+    AuthorArticleDetailVo detailForAdmin(Long id);
 
     void manualAuditReject(ArticleAuthFailDto dto);
 

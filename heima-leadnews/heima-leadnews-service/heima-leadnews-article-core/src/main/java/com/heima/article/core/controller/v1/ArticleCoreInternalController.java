@@ -1,16 +1,16 @@
 package com.heima.article.core.controller.v1;
 
 
-import com.heima.article.core.convert.ArticleConvert;
 import com.heima.article.core.service.ArticleService;
-import com.heima.model.articlecore.dto.*;
-import com.heima.model.articlecore.entity.Article;
+import com.heima.model.articlecore.dto.AdminArticlePageDto;
+import com.heima.model.articlecore.dto.ArticleAuthFailDto;
+import com.heima.model.articlecore.dto.ArticleSubmitDto;
+import com.heima.model.articlecore.dto.AuthorArticlePageDto;
 import com.heima.model.articlecore.vo.AdminArticleListVo;
 import com.heima.model.articlecore.vo.AuthorArticleDetailVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.dtos.PageResponseResult;
-import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -52,7 +52,7 @@ public class ArticleCoreInternalController {
         return articleService.pageOwnArticles(dto);
     }
 
-    @GetMapping("/detail/{id}")
+    @GetMapping("/author/{id}")
     public AuthorArticleDetailVo detailForAuthor(@PathVariable Long id){
         return articleService.detailForAuthor(id);
     }
@@ -63,7 +63,7 @@ public class ArticleCoreInternalController {
     }
 
     @GetMapping("/admin/{id}")
-    public AuthorArticleDetailVo forAdmin(@PathVariable Long id){
+    public AuthorArticleDetailVo detailForAdmin(@PathVariable Long id){
         return articleService.detailForAuthor(id);
     }
 

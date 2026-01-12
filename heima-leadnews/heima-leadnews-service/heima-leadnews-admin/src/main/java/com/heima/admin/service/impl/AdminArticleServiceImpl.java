@@ -11,6 +11,7 @@ import com.heima.model.common.dtos.PageResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -48,8 +49,13 @@ public class AdminArticleServiceImpl implements AdminArticleService {
     }
 
     @Override
-    public AuthorArticleDetailVo forAdmin(Long id) {
-        return articleCoreClient.forAdmin(id);
+    public AuthorArticleDetailVo detailForAdmin(Long id) {
+        AuthorArticleDetailVo detailVo = articleCoreClient.detailForAdmin(id);
+        List<Long> ids = new ArrayList<>();
+        ids.add(detailVo.getAuthorId());
+        Map<Long, String> nameMap = weMediaClient.getAuthorNameMap(ids);
+        detailVo.setAuthorName(nameMap.get(detailVo.getAuthorId()));
+        return detailVo;
     }
 
     @Override
