@@ -3,18 +3,15 @@ package com.heima.wemedia.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.apis.articlecore.ArticleCoreClient;
 import com.heima.common.constants.WeMediaConstants;
 import com.heima.common.constants.WmNewsMessageConstants;
 import com.heima.common.exception.CustomException;
 import com.heima.model.article.pojos.ApArticleEnable;
-import com.heima.model.articlecore.dto.ArticlePageDto;
+import com.heima.model.articlecore.dto.AuthorArticlePageDto;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
-import com.heima.model.articlecore.vo.ArticleVo;
+import com.heima.model.articlecore.vo.AuthorArticleVo;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
@@ -72,11 +69,11 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
     }
 
     @Override
-    public ArticleVo getArticleVo(Long id) {
+    public AuthorArticleVo getArticleVo(Long id) {
         if (id == null){
             throw new CustomException(AppHttpCodeEnum.AUTHOR_ID_NULL);
         }
-        ArticleVo detail = articleCoreClient.getArticleDetail(id);
+        AuthorArticleVo detail = articleCoreClient.getArticleDetail(id);
         return detail;
     }
 
@@ -120,15 +117,15 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 //    }
 
     @Override
-    public PageResponseResult<List<ArticleVo>> getPageListRemote(WmNewsPageReqDto dto) {
+    public PageResponseResult<List<AuthorArticleVo>> getPageListRemote(WmNewsPageReqDto dto) {
         WmUser wmUser = WmThreadLocalUtil.getUser();
         if (wmUser == null){
             throw new CustomException(AppHttpCodeEnum.USER_NOT_EXIST);
         }
-        ArticlePageDto articlePageDto = new ArticlePageDto();
-        BeanUtils.copyProperties(dto, articlePageDto);
-        articlePageDto.setAuthorId((long)wmUser.getId());
-        return articleCoreClient.getPageList(articlePageDto);
+        AuthorArticlePageDto authorArticlePageDto = new AuthorArticlePageDto();
+        BeanUtils.copyProperties(dto, authorArticlePageDto);
+        authorArticlePageDto.setAuthorId((long)wmUser.getId());
+        return articleCoreClient.getPageList(authorArticlePageDto);
     }
 
 //    @Override

@@ -30,10 +30,10 @@ public class WmNewsController {
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
 
-    @GetMapping("/one/{id}")
-    public ResponseResult selectOne(@PathVariable Long id){
-        return ResponseResult.okResult(wmNewsService.getArticleVo(id));
-    }
+//    @GetMapping("/one/{id}")
+//    public ResponseResult selectOne(@PathVariable Long id){
+//        return ResponseResult.okResult(wmNewsService.getArticleVo(id));
+//    }
 
     @PostMapping("/down_or_up")
     public ResponseResult downOrUp(@RequestBody WmNewsDto dto){

@@ -2,11 +2,10 @@ package com.heima.article.core.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.heima.model.articlecore.dto.ArticleDetailDto;
-import com.heima.model.articlecore.dto.ArticlePageDto;
-import com.heima.model.articlecore.dto.ArticleSubmitDto;
+import com.heima.model.articlecore.dto.*;
 import com.heima.model.articlecore.entity.Article;
-import com.heima.model.articlecore.vo.ArticleVo;
+import com.heima.model.articlecore.vo.AdminArticleVo;
+import com.heima.model.articlecore.vo.AuthorArticleVo;
 import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
@@ -29,10 +28,12 @@ public interface ArticleService extends IService<Article> {
 
     void publish(Long articleId);
 
-    PageResponseResult<List<ArticleVo>> getPageList(ArticlePageDto dto);
+    Article getArticle(Long id);
 
-    Article getOne(Long id);
+    PageResponseResult<List<AuthorArticleVo>> pageOwnArticles(AuthorArticlePageDto dto);
 
-    ArticleVo getArticleVo(Long id);
+    PageResponseResult<List<AdminArticleVo>> pageAllArticles(AdminArticlePageDto dto);
+
+
 
 }

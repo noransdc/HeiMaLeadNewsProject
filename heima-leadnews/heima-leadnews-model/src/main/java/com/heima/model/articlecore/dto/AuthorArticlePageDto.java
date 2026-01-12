@@ -4,18 +4,16 @@ import com.heima.model.common.dtos.PageRequestDto;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
 
 
 @Data
-public class ArticlePageDto extends PageRequestDto {
+public class AuthorArticlePageDto extends PageRequestDto {
 
 
     /**
      * 状态
      */
-    private Short status;
+    private Integer status;
     /**
      * 开始时间
      */
@@ -27,7 +25,7 @@ public class ArticlePageDto extends PageRequestDto {
     /**
      * 所属频道ID
      */
-    private Integer channelId;
+    private Long channelId;
     /**
      * 关键字
      */

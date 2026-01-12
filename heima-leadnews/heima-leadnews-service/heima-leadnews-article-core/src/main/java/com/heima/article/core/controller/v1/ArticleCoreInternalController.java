@@ -1,9 +1,12 @@
 package com.heima.article.core.controller.v1;
 
 
+import com.heima.article.core.convert.ArticleConvert;
 import com.heima.article.core.service.ArticleService;
 import com.heima.model.articlecore.dto.*;
-import com.heima.model.articlecore.vo.ArticleVo;
+import com.heima.model.articlecore.entity.Article;
+import com.heima.model.articlecore.vo.AdminArticleVo;
+import com.heima.model.articlecore.vo.AuthorArticleVo;
 import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
@@ -43,14 +46,27 @@ public class ArticleCoreInternalController {
     }
 
     @PostMapping("/page/list")
-    public PageResponseResult<List<ArticleVo>> getPageList(@RequestBody ArticlePageDto dto){
-        return articleService.getPageList(dto);
+    public PageResponseResult<List<AuthorArticleVo>> getPageList(@RequestBody AuthorArticlePageDto dto){
+        return articleService.pageOwnArticles(dto);
     }
 
     @GetMapping("/detail/{id}")
-    public ArticleVo getArticleVo(@PathVariable Long id){
-        return articleService.getArticleVo(id);
+    public AuthorArticleVo getArticleVo(@PathVariable Long id){
+        Article article = articleService.getArticle(id);
+        return ArticleConvert.toAuthorVo(article);
     }
+
+    @PostMapping("/admin/page")
+    public PageResponseResult<List<AdminArticleVo>> pageForAdmin(@RequestBody AdminArticlePageDto dto){
+        return articleService.pageAllArticles(dto);
+    }
+
+    @GetMapping("/admin/{id}")
+    public AdminArticleVo forAdmin(@PathVariable Long id){
+        Article article = articleService.getArticle(id);
+        return ArticleConvert.toAdminVo(article);
+    }
+
 
 
 }

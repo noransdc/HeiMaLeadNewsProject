@@ -1,13 +1,11 @@
 package com.heima.apis.articlecore;
 
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.heima.model.articlecore.dto.ArticleDetailDto;
-import com.heima.model.articlecore.dto.ArticlePageDto;
+import com.heima.model.articlecore.dto.AdminArticlePageDto;
+import com.heima.model.articlecore.dto.AuthorArticlePageDto;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
-import com.heima.model.articlecore.entity.Article;
-import com.heima.model.articlecore.entity.ArticleChannel;
-import com.heima.model.articlecore.vo.ArticleVo;
+import com.heima.model.articlecore.vo.AdminArticleVo;
+import com.heima.model.articlecore.vo.AuthorArticleVo;
 import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
@@ -39,10 +37,15 @@ public interface ArticleCoreClient {
     void postPublish(@PathVariable Long articleId);
 
     @PostMapping("/page/list")
-    PageResponseResult<List<ArticleVo>> getPageList(@RequestBody ArticlePageDto dto);
+    PageResponseResult<List<AuthorArticleVo>> getPageList(@RequestBody AuthorArticlePageDto dto);
 
     @GetMapping("/detail/{id}")
-    ArticleVo getArticleDetail(@PathVariable Long id);
+    AuthorArticleVo getArticleDetail(@PathVariable Long id);
 
+    @PostMapping("/admin/page")
+    PageResponseResult<List<AdminArticleVo>> pageForAdmin(@RequestBody AdminArticlePageDto dto);
+
+    @GetMapping("/admin/{id}")
+    AdminArticleVo forAdmin(@PathVariable Long id);
 
 }

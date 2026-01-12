@@ -4,10 +4,9 @@ package com.heima.model.articlecore.vo;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Data
-public class ArticleVo {
+public class AuthorArticleVo {
 
 
     private Long id;

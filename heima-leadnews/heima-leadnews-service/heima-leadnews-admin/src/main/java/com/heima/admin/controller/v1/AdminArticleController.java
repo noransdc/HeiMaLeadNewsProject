@@ -1,14 +1,14 @@
 package com.heima.admin.controller.v1;
 
 
-import com.heima.apis.articlecore.ArticleCoreClient;
-import com.heima.model.articlecore.dto.ArticlePageDto;
-import com.heima.model.articlecore.vo.ArticleVo;
+import com.heima.admin.service.AdminArticleService;
+import com.heima.model.articlecore.dto.AdminArticlePageDto;
+import com.heima.model.articlecore.dto.AuthorArticlePageDto;
+import com.heima.model.articlecore.vo.AdminArticleVo;
 import com.heima.model.common.dtos.PageResponseResult;
+import com.heima.model.common.dtos.ResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -17,11 +17,17 @@ import java.util.List;
 public class AdminArticleController {
 
     @Autowired
-    private ArticleCoreClient articleCoreClient;
+    private AdminArticleService adminArticleService;
 
     @PostMapping("/list_vo")
-    public PageResponseResult<List<ArticleVo>> getPageList(ArticlePageDto dto){
-        return articleCoreClient.getPageList(dto);
+    public PageResponseResult<List<AdminArticleVo>> listForAdmin(@RequestBody AdminArticlePageDto dto){
+        return adminArticleService.pageForAdmin(dto);
     }
+
+    @GetMapping("/one/{id}")
+    public ResponseResult forAdmin(@PathVariable Long id){
+        return ResponseResult.okResult(adminArticleService.forAdmin(id));
+    }
+
 
 }

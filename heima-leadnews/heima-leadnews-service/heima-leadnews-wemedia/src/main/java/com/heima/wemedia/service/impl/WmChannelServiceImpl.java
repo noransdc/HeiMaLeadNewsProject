@@ -20,6 +20,9 @@ import java.util.List;
 public class WmChannelServiceImpl extends ServiceImpl<WmChannelMapper, WmChannel> implements WmChannelService {
 
 
+    @Autowired
+    private ArticleChannelClient articleChannelClient;
+
 
     @Override
     public List<WmChannel> findAll() {
@@ -31,6 +34,11 @@ public class WmChannelServiceImpl extends ServiceImpl<WmChannelMapper, WmChannel
         return list;
     }
 
+
+    @Override
+    public List<AuthorChannelVo> listForAuthor() {
+        return articleChannelClient.listForAuthor();
+    }
 
 
 }
