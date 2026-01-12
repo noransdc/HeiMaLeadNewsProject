@@ -1,13 +1,12 @@
 package com.heima.apis.articlecore;
 
 
-import com.heima.model.articlecore.dto.AdminArticlePageDto;
-import com.heima.model.articlecore.dto.AuthorArticlePageDto;
-import com.heima.model.articlecore.dto.ArticleSubmitDto;
+import com.heima.model.articlecore.dto.*;
 import com.heima.model.articlecore.vo.AdminArticleListVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.dtos.PageResponseResult;
+import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,5 +46,12 @@ public interface ArticleCoreClient {
 
     @GetMapping("/admin/{id}")
     AdminArticleListVo forAdmin(@PathVariable Long id);
+
+    @PostMapping("/admin/auth_fail")
+    void manualAuditReject(@RequestBody ArticleAuthFailDto dto);
+
+    @PostMapping("/admin/auth_pass/{id}")
+    void manualAuditPass(@PathVariable Long id);
+
 
 }

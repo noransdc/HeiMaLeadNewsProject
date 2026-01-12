@@ -124,8 +124,19 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public PageResponseResult<List<AdminArticleListVo>> pageAllArticles(AdminArticlePageDto dto) {
+
+        //前端入参 “待人工审核” 转为 “自动审核失败”
+        if (dto.getStatus() != null && dto.getStatus() == 3){
+            dto.setStatus(ArticleAuditEnum.AUTO_AUDIT_FAILED.getCode());
+        }
+
+        //前端入参 “人工审核通过” 转为 “审核成功”
+        if (dto.getStatus() != null && dto.getStatus() == 4){
+            dto.setStatus(ArticleAuditEnum.AUDIT_SUCCESS.getCode());
+        }
+
         ArticlePageQuery pageQuery = new ArticlePageQuery();
-        pageQuery.setKeyword(dto.getKeyword());
+        pageQuery.setKeyword(dto.getTitle());
         pageQuery.setAuditStatus(dto.getStatus());
         pageQuery.setPage(dto.getPage());
         pageQuery.setSize(dto.getSize());
@@ -137,6 +148,17 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         result.setData(ArticleConvert.toAdminVoList(pageRsp.getRecords()));
 
         return result;
+    }
+
+
+    @Override
+    public void manualAuditReject(ArticleAuthFailDto dto) {
+        updateAuditStatus(dto.getId(), ArticleAuditEnum.MANUAL_AUDIT_FAILED.getCode(), dto.getMsg());
+    }
+
+    @Override
+    public void manualAuditPass(Long articleId) {
+        updateAuditStatus(articleId, ArticleAuditEnum.AUDIT_SUCCESS.getCode(), null);
     }
 
     private IPage<Article> listPageGeneric(ArticlePageQuery dto) {

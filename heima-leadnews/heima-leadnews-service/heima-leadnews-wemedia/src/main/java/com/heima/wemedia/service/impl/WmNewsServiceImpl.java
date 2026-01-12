@@ -11,6 +11,8 @@ import com.heima.common.exception.CustomException;
 import com.heima.model.article.pojos.ApArticleEnable;
 import com.heima.model.articlecore.dto.AuthorArticlePageDto;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
+import com.heima.model.articlecore.dto.ArticleAuthFailDto;
+import com.heima.model.articlecore.dto.ArticleAuthPassDto;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.common.dtos.ResponseResult;
@@ -313,7 +315,7 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 //    }
 
     @Override
-    public void authFail(WmNewsAuthFailDto dto) {
+    public void authFail(ArticleAuthFailDto dto) {
         WmNews wmNews = getById(dto.getId());
         if (wmNews == null){
             throw new CustomException(AppHttpCodeEnum.DATA_NOT_EXIST);
@@ -330,7 +332,7 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
     }
 
     @Override
-    public void authPass(WmNewsAuthPassDto dto) {
+    public void authPass(ArticleAuthPassDto dto) {
         WmNews wmNews = getById(dto.getId());
         if (wmNews == null){
             throw new CustomException(AppHttpCodeEnum.DATA_NOT_EXIST);

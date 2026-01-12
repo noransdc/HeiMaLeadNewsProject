@@ -2,6 +2,8 @@ package com.heima.wemedia.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.heima.model.articlecore.dto.ArticleAuthFailDto;
+import com.heima.model.articlecore.dto.ArticleAuthPassDto;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.common.dtos.ResponseResult;
@@ -22,9 +24,9 @@ public interface WmNewsService extends IService<WmNews> {
 
     ResponseResult downOrUp( WmNewsDto dto);
 
-    void authFail(WmNewsAuthFailDto dto);
+    void authFail(ArticleAuthFailDto dto);
 
-    void authPass(WmNewsAuthPassDto dto);
+    void authPass(ArticleAuthPassDto dto);
 
     void submitRemote(WmNewsDto dto);
 

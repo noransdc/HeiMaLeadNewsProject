@@ -9,7 +9,7 @@ import lombok.Data;
 public class AdminArticlePageDto extends PageRequestDto {
 
 
-    private String keyword;
+    private String title;
     private Integer status;
 
 

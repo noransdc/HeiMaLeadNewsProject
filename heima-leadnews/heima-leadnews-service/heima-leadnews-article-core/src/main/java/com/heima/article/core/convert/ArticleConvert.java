@@ -1,6 +1,7 @@
 package com.heima.article.core.convert;
 
 
+import com.heima.common.enums.ArticleAuditEnum;
 import com.heima.model.articlecore.entity.Article;
 import com.heima.model.articlecore.vo.AdminArticleListVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
@@ -29,11 +30,16 @@ public final class ArticleConvert {
         BeanUtils.copyProperties(article, vo);
 
         vo.setImages(article.getCoverImgUrl());
-        vo.setStatus(article.getAuditStatus());
         vo.setType(article.getCoverType());
         vo.setCreatedTime(article.getCreateTime());
         vo.setSubmitedTime(article.getCreateTime());
         vo.setLabels(article.getLabel());
+
+        if (article.getAuditStatus() == ArticleAuditEnum.AUTO_AUDIT_FAILED.getCode()){
+            vo.setStatus(3);
+        } else {
+            vo.setStatus(article.getAuditStatus());
+        }
 
         return vo;
     }

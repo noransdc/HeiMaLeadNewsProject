@@ -32,6 +32,8 @@ public interface ArticleService extends IService<Article> {
 
     PageResponseResult<List<AdminArticleListVo>> pageAllArticles(AdminArticlePageDto dto);
 
+    void manualAuditReject(ArticleAuthFailDto dto);
 
+    void manualAuditPass(Long articleId);
 
 }

@@ -9,6 +9,7 @@ import com.heima.model.articlecore.vo.AdminArticleListVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.dtos.PageResponseResult;
+import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -67,6 +68,15 @@ public class ArticleCoreInternalController {
         return ArticleConvert.toAdminListVo(article);
     }
 
+    @PostMapping("/admin/auth_fail")
+    public void manualAuditReject(@RequestBody ArticleAuthFailDto dto){
+        articleService.manualAuditReject(dto);
+    }
+
+    @PostMapping("/admin/auth_pass/{id}")
+    public void manualAuditPass(@PathVariable Long id){
+        articleService.manualAuditPass(id);
+    }
 
 
 }
