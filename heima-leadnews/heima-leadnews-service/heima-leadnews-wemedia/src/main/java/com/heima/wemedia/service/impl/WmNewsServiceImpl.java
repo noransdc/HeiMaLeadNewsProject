@@ -11,7 +11,7 @@ import com.heima.common.exception.CustomException;
 import com.heima.model.article.pojos.ApArticleEnable;
 import com.heima.model.articlecore.dto.AuthorArticlePageDto;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
-import com.heima.model.articlecore.vo.AuthorArticleVo;
+import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
@@ -69,11 +69,11 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
     }
 
     @Override
-    public AuthorArticleVo getArticleVo(Long id) {
+    public AuthorArticleListVo getArticleVo(Long id) {
         if (id == null){
             throw new CustomException(AppHttpCodeEnum.AUTHOR_ID_NULL);
         }
-        AuthorArticleVo detail = articleCoreClient.getArticleDetail(id);
+        AuthorArticleListVo detail = articleCoreClient.getArticleDetail(id);
         return detail;
     }
 
@@ -117,7 +117,7 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 //    }
 
     @Override
-    public PageResponseResult<List<AuthorArticleVo>> getPageListRemote(WmNewsPageReqDto dto) {
+    public PageResponseResult<List<AuthorArticleListVo>> getPageListRemote(WmNewsPageReqDto dto) {
         WmUser wmUser = WmThreadLocalUtil.getUser();
         if (wmUser == null){
             throw new CustomException(AppHttpCodeEnum.USER_NOT_EXIST);
@@ -125,7 +125,7 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
         AuthorArticlePageDto authorArticlePageDto = new AuthorArticlePageDto();
         BeanUtils.copyProperties(dto, authorArticlePageDto);
         authorArticlePageDto.setAuthorId((long)wmUser.getId());
-        return articleCoreClient.getPageList(authorArticlePageDto);
+        return articleCoreClient.pageForAuthor(authorArticlePageDto);
     }
 
 //    @Override

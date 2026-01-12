@@ -2,8 +2,8 @@ package com.heima.article.core.convert;
 
 
 import com.heima.model.articlecore.entity.Article;
-import com.heima.model.articlecore.vo.AdminArticleVo;
-import com.heima.model.articlecore.vo.AuthorArticleVo;
+import com.heima.model.articlecore.vo.AdminArticleListVo;
+import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.PageResponseResult;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
@@ -20,66 +20,69 @@ public final class ArticleConvert {
     private ArticleConvert(){}
 
 
-    public static AdminArticleVo toAdminVo(Article article){
+    public static AdminArticleListVo toAdminListVo(Article article){
         if (article == null){
             return null;
         }
-        AdminArticleVo adminArticleVo = new AdminArticleVo();
+        AdminArticleListVo vo = new AdminArticleListVo();
 
-        BeanUtils.copyProperties(article, adminArticleVo);
+        BeanUtils.copyProperties(article, vo);
 
-        adminArticleVo.setImages(article.getCoverImgUrl());
-        adminArticleVo.setStatus(article.getAuditStatus());
-        adminArticleVo.setType(article.getCoverType());
+        vo.setImages(article.getCoverImgUrl());
+        vo.setStatus(article.getAuditStatus());
+        vo.setType(article.getCoverType());
+        vo.setCreatedTime(article.getCreateTime());
+        vo.setSubmitedTime(article.getCreateTime());
+        vo.setLabels(article.getLabel());
 
-        return adminArticleVo;
-
+        return vo;
     }
 
-    public static AuthorArticleVo toAuthorVo(Article article){
+    public static AuthorArticleListVo toAuthorListVo(Article article){
         if (article == null){
             return null;
         }
-        AuthorArticleVo authorArticleVo = new AuthorArticleVo();
+        AuthorArticleListVo vo = new AuthorArticleListVo();
 
-        BeanUtils.copyProperties(article, authorArticleVo);
+        BeanUtils.copyProperties(article, vo);
 
-        authorArticleVo.setImages(article.getCoverImgUrl());
+        vo.setStatus(article.getAuditStatus());
+        vo.setImages(article.getCoverImgUrl());
 
-        return authorArticleVo;
+        return vo;
     }
 
-    public static List<AdminArticleVo> toAdminVoList(List<Article> list){
+    public static List<AdminArticleListVo> toAdminVoList(List<Article> list){
         if (CollectionUtils.isEmpty(list)){
             return Collections.emptyList();
         }
 
         return list.stream()
-                .map(ArticleConvert::toAdminVo)
+                .map(ArticleConvert::toAdminListVo)
                 .collect(Collectors.toList());
     }
 
-    public static List<AuthorArticleVo> toAuthorVoList(List<Article> list){
+    public static List<AuthorArticleListVo> toAuthorVoList(List<Article> list){
         if (CollectionUtils.isEmpty(list)){
             return Collections.emptyList();
         }
 
         return list.stream()
-                .map(ArticleConvert::toAuthorVo)
+                .map(ArticleConvert::toAuthorListVo)
                 .collect(Collectors.toList());
     }
 
-    public static PageResponseResult<List<AdminArticleVo>> toAdminVoPage(PageResponseResult<List<Article>> pageRsp){
+    public static PageResponseResult<List<AdminArticleListVo>> toAdminVoPage(PageResponseResult<List<Article>> pageRsp){
         if (pageRsp == null){
             return null;
         }
-        PageResponseResult<List<AdminArticleVo>> result = new PageResponseResult<>();
+        PageResponseResult<List<AdminArticleListVo>> result = new PageResponseResult<>();
         result.setCurrentPage(pageRsp.getCurrentPage());
         result.setSize(pageRsp.getSize());
         result.setTotal(pageRsp.getTotal());
         result.setData(
                 pageRsp.getData().stream()
-                        .map(ArticleConvert::toAdminVo)
+                        .map(ArticleConvert::toAdminListVo)
                         .collect(Collectors.toList())
         );
 
@@ -87,18 +90,18 @@ public final class ArticleConvert {
     }
 
 
-    public static PageResponseResult<List<AuthorArticleVo>> toAuthorVoPage(PageResponseResult<List<Article>> pageRsp){
+    public static PageResponseResult<List<AuthorArticleListVo>> toAuthorVoPage(PageResponseResult<List<Article>> pageRsp){
         if (pageRsp == null){
             return null;
         }
 
-        PageResponseResult<List<AuthorArticleVo>> result = new PageResponseResult<>();
+        PageResponseResult<List<AuthorArticleListVo>> result = new PageResponseResult<>();
         result.setCurrentPage(pageRsp.getCurrentPage());
         result.setSize(pageRsp.getSize());
         result.setTotal(pageRsp.getTotal());
         result.setData(
                 pageRsp.getData().stream()
-                        .map(ArticleConvert::toAuthorVo)
+                        .map(ArticleConvert::toAuthorListVo)
                         .collect(Collectors.toList())
         );
 

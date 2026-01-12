@@ -2,35 +2,24 @@ package com.heima.article.core.service.impl;
 
 
 import com.alibaba.fastjson.JSON;
-import com.heima.article.core.mapper.ArticleSensitiveMapper;
 import com.heima.article.core.service.ArticleAuditService;
 import com.heima.article.core.service.ArticleSensitiveService;
-import com.heima.article.core.service.ArticleService;
 import com.heima.common.aliyun.GreenImageScanV2;
 import com.heima.common.aliyun.GreenTextScanV1;
 import com.heima.common.constants.ArticleConstants;
 import com.heima.common.enums.ArticleAuditEnum;
 import com.heima.common.enums.GreenScanEnum;
-import com.heima.common.exception.CustomException;
 import com.heima.file.service.FileStorageService;
 import com.heima.model.articlecore.dto.ArticleAuditRsp;
-import com.heima.model.articlecore.dto.ArticleDetailDto;
 import com.heima.model.articlecore.dto.GreenScanRspDto;
 import com.heima.model.articlecore.entity.Article;
 import com.heima.model.articlecore.entity.ArticleContent;
 import com.heima.model.articlecore.entity.ArticleContentItem;
-import com.heima.model.common.enums.AppHttpCodeEnum;
-import feign.template.Literal;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.util.*;
 
 
@@ -53,11 +42,11 @@ public class ArticleAuditServiceImpl implements ArticleAuditService {
 
 
     @Override
-    public ArticleAuditRsp audit(ArticleDetailDto articleDetail) {
+    public ArticleAuditRsp audit(Article article, ArticleContent articleContent) {
 
-        Long articleId = articleDetail.getArticle().getId();
+        Long articleId = article.getId();
 
-        Map<String, List<String>> map = getMaterial(articleDetail);
+        Map<String, List<String>> map = getMaterial(article, articleContent);
 
         List<String> textList = map.get(ArticleConstants.CONTENT_ITEM_TEXT);
         List<String> urlList = map.get(ArticleConstants.CONTENT_ITEM_IMG);
@@ -86,10 +75,9 @@ public class ArticleAuditServiceImpl implements ArticleAuditService {
         return buildAuditSuccessRsp(articleId);
     }
 
-    private Map<String, List<String>> getMaterial(ArticleDetailDto articleDetail){
-        Article article = articleDetail.getArticle();
+    private Map<String, List<String>> getMaterial(Article article, ArticleContent articleContent){
         String title = article.getTitle();
-        String content = articleDetail.getArticleContent().getContent();
+        String content = articleContent.getContent();
 
         List<String> textList = new ArrayList<>();
         textList.add(title);

@@ -5,8 +5,8 @@ import com.heima.article.core.convert.ArticleConvert;
 import com.heima.article.core.service.ArticleService;
 import com.heima.model.articlecore.dto.*;
 import com.heima.model.articlecore.entity.Article;
-import com.heima.model.articlecore.vo.AdminArticleVo;
-import com.heima.model.articlecore.vo.AuthorArticleVo;
+import com.heima.model.articlecore.vo.AdminArticleListVo;
+import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
@@ -25,7 +25,7 @@ public class ArticleCoreInternalController {
     private ArticleService articleService;
 
 
-    @PostMapping("/add")
+    @PostMapping("/author")
     public void submit(@RequestBody ArticleSubmitDto dto){
         articleService.submit(dto);
     }
@@ -45,26 +45,26 @@ public class ArticleCoreInternalController {
         articleService.publish(articleId);
     }
 
-    @PostMapping("/page/list")
-    public PageResponseResult<List<AuthorArticleVo>> getPageList(@RequestBody AuthorArticlePageDto dto){
+    @PostMapping("/author/page")
+    public PageResponseResult<List<AuthorArticleListVo>> pageForAuthor(@RequestBody AuthorArticlePageDto dto){
         return articleService.pageOwnArticles(dto);
     }
 
     @GetMapping("/detail/{id}")
-    public AuthorArticleVo getArticleVo(@PathVariable Long id){
+    public AuthorArticleListVo detailForAuthor(@PathVariable Long id){
         Article article = articleService.getArticle(id);
-        return ArticleConvert.toAuthorVo(article);
+        return ArticleConvert.toAuthorListVo(article);
     }
 
     @PostMapping("/admin/page")
-    public PageResponseResult<List<AdminArticleVo>> pageForAdmin(@RequestBody AdminArticlePageDto dto){
+    public PageResponseResult<List<AdminArticleListVo>> pageForAdmin(@RequestBody AdminArticlePageDto dto){
         return articleService.pageAllArticles(dto);
     }
 
     @GetMapping("/admin/{id}")
-    public AdminArticleVo forAdmin(@PathVariable Long id){
+    public AdminArticleListVo forAdmin(@PathVariable Long id){
         Article article = articleService.getArticle(id);
-        return ArticleConvert.toAdminVo(article);
+        return ArticleConvert.toAdminListVo(article);
     }
 
 

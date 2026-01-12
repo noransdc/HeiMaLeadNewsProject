@@ -13,7 +13,7 @@ public class WmNewsPageReqDto extends PageRequestDto {
     /**
      * 状态
      */
-    private Short status;
+    private Integer status;
     /**
      * 开始时间
      */
@@ -25,7 +25,7 @@ public class WmNewsPageReqDto extends PageRequestDto {
     /**
      * 所属频道ID
      */
-    private Integer channelId;
+    private Long channelId;
     /**
      * 关键字
      */

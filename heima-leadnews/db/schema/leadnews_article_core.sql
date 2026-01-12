@@ -79,6 +79,9 @@ alter table article
         comment '可用，0否，1是'
         after reject_reason;
 
+alter table article
+    modify column cover_img_url text comment '封面图链接，最多3张';
+
 
 -- v1.0: initial article content table
 create table article_content
@@ -95,8 +98,7 @@ create table article_content
 
 -- v1.1: modify content to not null
 alter table article_content
-    modify column content mediumtext not null
-        comment '文章内容';
+    modify column content text not null comment '文章内容';
 
 
 -- v1.0: initial article interaction

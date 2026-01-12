@@ -3,8 +3,7 @@ package com.heima.admin.controller.v1;
 
 import com.heima.admin.service.AdminArticleService;
 import com.heima.model.articlecore.dto.AdminArticlePageDto;
-import com.heima.model.articlecore.dto.AuthorArticlePageDto;
-import com.heima.model.articlecore.vo.AdminArticleVo;
+import com.heima.model.articlecore.vo.AdminArticleListVo;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.common.dtos.ResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +19,7 @@ public class AdminArticleController {
     private AdminArticleService adminArticleService;
 
     @PostMapping("/list_vo")
-    public PageResponseResult<List<AdminArticleVo>> listForAdmin(@RequestBody AdminArticlePageDto dto){
+    public PageResponseResult<List<AdminArticleListVo>> listForAdmin(@RequestBody AdminArticlePageDto dto){
         return adminArticleService.pageForAdmin(dto);
     }
 

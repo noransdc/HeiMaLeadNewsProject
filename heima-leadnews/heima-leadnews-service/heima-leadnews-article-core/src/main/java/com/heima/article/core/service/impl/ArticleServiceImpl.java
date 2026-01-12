@@ -23,8 +23,8 @@ import com.heima.model.articlecore.entity.Article;
 import com.heima.model.articlecore.entity.ArticleContent;
 import com.heima.model.articlecore.entity.ArticleContentItem;
 import com.heima.model.articlecore.event.ArticleTaskCreatedEvent;
-import com.heima.model.articlecore.vo.AdminArticleVo;
-import com.heima.model.articlecore.vo.AuthorArticleVo;
+import com.heima.model.articlecore.vo.AdminArticleListVo;
+import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
@@ -70,8 +70,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Autowired
     private ArticleAuditService articleAuditService;
 
-    @Autowired
-    private ArticleMapper articleMapper;
 
 
     @Transactional
@@ -101,7 +99,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    public PageResponseResult<List<AuthorArticleVo>> pageOwnArticles(AuthorArticlePageDto dto) {
+    public PageResponseResult<List<AuthorArticleListVo>> pageOwnArticles(AuthorArticlePageDto dto) {
         if (dto.getAuthorId() == null){
             throw new CustomException(AppHttpCodeEnum.RPC_AUTHOR_ID_NULL);
         }
@@ -117,7 +115,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         IPage<Article> pageRsp = listPageGeneric(pageQuery);
 
-        PageResponseResult<List<AuthorArticleVo>> result = new PageResponseResult<>(dto.getPage(), dto.getSize(),
+        PageResponseResult<List<AuthorArticleListVo>> result = new PageResponseResult<>(dto.getPage(), dto.getSize(),
                 (int)pageRsp.getTotal());
         result.setData(ArticleConvert.toAuthorVoList(pageRsp.getRecords()));
 
@@ -125,7 +123,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    public PageResponseResult<List<AdminArticleVo>> pageAllArticles(AdminArticlePageDto dto) {
+    public PageResponseResult<List<AdminArticleListVo>> pageAllArticles(AdminArticlePageDto dto) {
         ArticlePageQuery pageQuery = new ArticlePageQuery();
         pageQuery.setKeyword(dto.getKeyword());
         pageQuery.setAuditStatus(dto.getStatus());
@@ -134,7 +132,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         IPage<Article> pageRsp = listPageGeneric(pageQuery);
 
-        PageResponseResult<List<AdminArticleVo>> result = new PageResponseResult<>(dto.getPage(), dto.getSize(),
+        PageResponseResult<List<AdminArticleListVo>> result = new PageResponseResult<>(dto.getPage(), dto.getSize(),
                 (int)pageRsp.getTotal());
         result.setData(ArticleConvert.toAdminVoList(pageRsp.getRecords()));
 
@@ -189,13 +187,31 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public void audit(Long articleId) {
+        if (articleId == null) {
+            throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID);
+        }
+        Article article = lambdaQuery().eq(Article::getId, articleId)
+                .eq(Article::getIsDelete, 0)
+                .eq(Article::getIsEnabled, 1)
+                .one();
+
+        if (article == null) {
+            throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID, "文章不存在");
+        }
+
+        if (article.getAuditStatus() != ArticleAuditEnum.PENDING_AUDIT.getCode()){
+            log.info("article {} already audited, skip", articleId);
+            return;
+        }
+
+        ArticleContent articleContent = articleContentMapper.selectById(articleId);
+
+        if (articleContent == null) {
+            throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID, "文章不存在");
+        }
+
         try {
-            ArticleDetailDto articleDetail = getArticleDetail(articleId);
-            if (articleDetail.getArticle().getAuditStatus() != ArticleAuditEnum.PENDING_AUDIT.getCode()){
-                log.info("article {} already audited, skip", articleId);
-                return;
-            }
-            ArticleAuditRsp auditRsp = articleAuditService.audit(articleDetail);
+            ArticleAuditRsp auditRsp = articleAuditService.audit(article, articleContent);
             updateAuditStatus(articleId, auditRsp.getAuditStatus(), auditRsp.getErrorMsg());
 
         } catch (CustomException e){
@@ -250,29 +266,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     }
 
-
-    @Override
-    public ArticleDetailDto getArticleDetail(Long articleId) {
-        if (articleId == null) {
-            throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID);
-        }
-        Article article = lambdaQuery().eq(Article::getId, articleId)
-                .eq(Article::getIsDelete, 0)
-                .eq(Article::getIsEnabled, 1)
-                .one();
-
-        ArticleContent articleContent = articleContentMapper.selectById(articleId);
-
-        if (article == null || articleContent == null) {
-            throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID, "文章不存在");
-        }
-
-        ArticleDetailDto articleDetailDto = new ArticleDetailDto();
-        articleDetailDto.setArticle(article);
-        articleDetailDto.setArticleContent(articleContent);
-
-        return articleDetailDto;
-    }
 
     @Override
     public List<ArticleAuditCompensateDto> getArticleAuditCompensateList(PageRequestDto dto) {

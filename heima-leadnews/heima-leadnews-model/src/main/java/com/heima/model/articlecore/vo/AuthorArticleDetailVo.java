@@ -5,8 +5,9 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+
 @Data
-public class AuthorArticleVo {
+public class AuthorArticleDetailVo {
 
 
     private Long id;
@@ -19,7 +20,6 @@ public class AuthorArticleVo {
     private Integer status;
     private LocalDateTime createdTime;
     private LocalDateTime publishTime;
-
 
 
 }

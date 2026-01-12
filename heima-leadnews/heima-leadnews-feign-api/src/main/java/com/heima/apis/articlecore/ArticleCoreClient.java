@@ -4,8 +4,8 @@ package com.heima.apis.articlecore;
 import com.heima.model.articlecore.dto.AdminArticlePageDto;
 import com.heima.model.articlecore.dto.AuthorArticlePageDto;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
-import com.heima.model.articlecore.vo.AdminArticleVo;
-import com.heima.model.articlecore.vo.AuthorArticleVo;
+import com.heima.model.articlecore.vo.AdminArticleListVo;
+import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
@@ -24,7 +24,7 @@ import java.util.List;
 )
 public interface ArticleCoreClient {
 
-    @PostMapping("/add")
+    @PostMapping("/author")
     void submit(@RequestBody ArticleSubmitDto dto);
 
     @PostMapping("/pending-audit-ids")
@@ -36,16 +36,16 @@ public interface ArticleCoreClient {
     @PostMapping("/publish/{articleId}")
     void postPublish(@PathVariable Long articleId);
 
-    @PostMapping("/page/list")
-    PageResponseResult<List<AuthorArticleVo>> getPageList(@RequestBody AuthorArticlePageDto dto);
+    @PostMapping("/author/page")
+    PageResponseResult<List<AuthorArticleListVo>> pageForAuthor(@RequestBody AuthorArticlePageDto dto);
 
     @GetMapping("/detail/{id}")
-    AuthorArticleVo getArticleDetail(@PathVariable Long id);
+    AuthorArticleListVo getArticleDetail(@PathVariable Long id);
 
     @PostMapping("/admin/page")
-    PageResponseResult<List<AdminArticleVo>> pageForAdmin(@RequestBody AdminArticlePageDto dto);
+    PageResponseResult<List<AdminArticleListVo>> pageForAdmin(@RequestBody AdminArticlePageDto dto);
 
     @GetMapping("/admin/{id}")
-    AdminArticleVo forAdmin(@PathVariable Long id);
+    AdminArticleListVo forAdmin(@PathVariable Long id);
 
 }
