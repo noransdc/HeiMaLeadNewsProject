@@ -26,7 +26,7 @@ public class AppTokenInterceptor implements HandlerInterceptor {
         String userId = request.getHeader("userId");
         if (userId != null){
             ApUser apUser = new ApUser();
-            apUser.setId(Integer.parseInt(userId));
+            apUser.setId(Long.parseLong(userId));
             AppThreadLocalUtil.setUser(apUser);
         }
 

@@ -19,23 +19,23 @@ public class BehaviorController {
     @Autowired
     private BehaviorService behaviorService;
 
-    @PostMapping("/likes_behavior")
-    public ResponseResult like(@RequestBody LikeBehaviorDto dto){
-        behaviorService.like(dto);
-        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
-    }
-
-    @PostMapping("/un_likes_behavior")
-    public ResponseResult dislike(@RequestBody DislikeBehaviorDto dto){
-        behaviorService.dislike(dto);
-        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
-    }
-
-    @PostMapping("/read_behavior")
-    public ResponseResult read(@RequestBody ReadBehaviorDto dto){
-        behaviorService.read(dto);
-        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
-    }
+//    @PostMapping("/likes_behavior")
+//    public ResponseResult like(@RequestBody LikeBehaviorDto dto){
+//        behaviorService.like(dto);
+//        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+//    }
+//
+//    @PostMapping("/un_likes_behavior")
+//    public ResponseResult dislike(@RequestBody DislikeBehaviorDto dto){
+//        behaviorService.dislike(dto);
+//        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+//    }
+//
+//    @PostMapping("/read_behavior")
+//    public ResponseResult read(@RequestBody ReadBehaviorDto dto){
+//        behaviorService.read(dto);
+//        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+//    }
 
 
 

@@ -5,31 +5,34 @@ import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.user.dtos.ApCollectionDto;
 import com.heima.model.user.dtos.ApFollowDto;
-import com.heima.user.service.ApUserService;
+import com.heima.user.service.ApUserCollectionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+
+
 @RestController
 @RequestMapping("/api/v1/user")
-public class ApUserController {
+public class UserArticleController {
 
     @Autowired
-    private ApUserService apUserService;
+    private ApUserCollectionService apUserCollectionService;
 
-    @PostMapping("/user_follow")
-    public ResponseResult follow(@RequestBody ApFollowDto dto){
-        apUserService.follow(dto);
-        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
-    }
+//    @PostMapping("/user_follow")
+//    public ResponseResult follow(@RequestBody ApFollowDto dto){
+//        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+//    }
 
     @PostMapping("/collection_behavior")
     public ResponseResult collection(@RequestBody ApCollectionDto dto){
-        apUserService.collection(dto);
+        apUserCollectionService.collectArticle(dto);
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
+
+
 
 
 }
