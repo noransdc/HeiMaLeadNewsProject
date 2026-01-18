@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.heima.user.mapper.EventOutboxMapper">
+
+    <select id="listByStatus" resultType="com.heima.model.user.entity.EventOutbox">
+        select * from event_outbox
+        where status = #{status}
+        order by create_time asc
+        limit #{limit}
+    </select>
+
+    <update id="markSending">
+        update event_outbox
+        set status = #{targetStatus}
+        where event_id = #{eventId}
+            and status = #{originalStatus}
+    </update>
+
+    <update id="markSent">
+        update event_outbox
+        set status = #{targetStatus},
+            sent_time = now()
+        where event_id = #{eventId}
+          and status = #{originalStatus}
+    </update>
+
+    <update id="markFailed">
+        update event_outbox
+        set status = #{targetStatus},
+            retry_count = retry_count + 1
+        where event_id = #{eventId}
+          and status = #{originalStatus}
+    </update>
+
+</mapper>

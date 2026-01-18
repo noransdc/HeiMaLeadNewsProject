@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.google.gson.JsonObject;
 import com.heima.common.exception.CustomException;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.user.dtos.ApCollectionDto;
@@ -13,7 +12,7 @@ import com.heima.model.user.pojos.ApUser;
 import com.heima.model.user.pojos.ApUserCollection;
 import com.heima.thread.AppThreadLocalUtil;
 import com.heima.user.constant.EventAggregateEnum;
-import com.heima.user.constant.EventTypeEnum;
+import com.heima.common.enums.EventTypeEnum;
 import com.heima.user.mapper.ApUserCollectionMapper;
 import com.heima.user.service.ApUserCollectionService;
 import com.heima.user.service.EventOutboxService;
@@ -50,10 +49,10 @@ public class ApUserCollectionServiceImpl extends ServiceImpl<ApUserCollectionMap
 
         if (dto.getOperation() == 1){
             addArticleCollection(dto, user.getId());
+
         } else {
             cancelArticleCollection(dto, user.getId());
         }
-
 
     }
 

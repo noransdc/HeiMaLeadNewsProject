@@ -2,16 +2,14 @@ package com.heima.user.service.impl;
 
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.heima.common.exception.CustomException;
-import com.heima.model.common.enums.AppHttpCodeEnum;
-import com.heima.model.user.dtos.ApCollectionDto;
 import com.heima.model.user.entity.EventOutbox;
-import com.heima.model.user.pojos.ApUser;
-import com.heima.thread.AppThreadLocalUtil;
+import com.heima.user.constant.EventOutboxStatusEnum;
 import com.heima.user.mapper.EventOutboxMapper;
 import com.heima.user.service.EventOutboxService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 
@@ -30,6 +28,35 @@ public class EventOutboxServiceImpl extends ServiceImpl<EventOutboxMapper, Event
         eventOutbox.setPayload(payload);
 
         save(eventOutbox);
+    }
+
+
+    @Override
+    @Transactional
+    public List<EventOutbox> listNew() {
+        return baseMapper.listByStatus(EventOutboxStatusEnum.NEW.getCode(), 10);
+    }
+
+    @Override
+    public boolean markSending(String eventId) {
+        int count = baseMapper.markSending(eventId,
+                EventOutboxStatusEnum.SENDING.getCode(),
+                EventOutboxStatusEnum.NEW.getCode());
+        return count == 1;
+    }
+
+    @Override
+    public void markSent(String eventId) {
+        baseMapper.markSent(eventId,
+                EventOutboxStatusEnum.SENT.getCode(),
+                EventOutboxStatusEnum.SENDING.getCode());
+    }
+
+    @Override
+    public void markFailed(String eventId) {
+        baseMapper.markFailed(eventId,
+                EventOutboxStatusEnum.FAILED.getCode(),
+                EventOutboxStatusEnum.SENDING.getCode());
     }
 
 

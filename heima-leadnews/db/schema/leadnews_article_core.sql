@@ -192,3 +192,21 @@ alter table article_sensitive
         after name,
     add column delete_time datetime default null comment '删除时间'
         after is_delete;
+
+
+
+create table article_event_consumed
+(
+
+    event_id    varchar(64)     not null comment '事件id，来自event_outbox',
+    event_type  varchar(32)     not null comment '事件类型',
+    article_id  bigint unsigned not null comment '文章id',
+    create_time datetime        not null default current_timestamp comment '创建时间',
+
+    primary key (event_id),
+    key idx_article_event (article_id, event_type)
+
+) engine = InnoDB
+  default charset = utf8mb4
+  collate = utf8mb4_unicode_ci
+    comment '文章事件消费表';

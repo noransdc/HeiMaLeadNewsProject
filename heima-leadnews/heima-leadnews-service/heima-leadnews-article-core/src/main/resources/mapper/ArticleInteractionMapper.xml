@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.heima.article.core.mapper.ArticleInteractionMapper">
+    
+    
+    <update id="increaseView">
+        update article_interaction
+        set view_count = view_count + 1
+        where article_id = #{articleId}
+    </update>
+
+    <update id="increaseLike">
+        update article_interaction
+        set like_count = like_count + 1
+        where article_id = #{articleId}
+    </update>
+
+    <update id="decreaseLike">
+        update article_interaction
+        set like_count = greatest(0, like_count - 1)
+        where article_id = #{articleId}
+    </update>
+
+    <update id="increaseComment">
+        update article_interaction
+        set comment_count = comment_count + 1
+        where article_id = #{articleId}
+    </update>
+
+    <update id="increaseCollection">
+        update article_interaction
+        set collect_count = collect_count + 1
+        where article_id = #{articleId}
+    </update>
+
+    <update id="decreaseCollection">
+        update article_interaction
+        set collect_count = greatest(0, collect_count - 1)
+        where article_id = #{articleId}
+    </update>
+    
+</mapper>
