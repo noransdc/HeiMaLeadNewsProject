@@ -2,6 +2,8 @@ package com.heima.article.core.controller.v1;
 
 
 import com.heima.article.core.service.ArticleService;
+import com.heima.article.core.service.HotArticleRankService;
+import com.heima.model.article.dtos.ArticleHomeDto;
 import com.heima.model.articlecore.dto.AdminArticlePageDto;
 import com.heima.model.articlecore.dto.ArticleAuthFailDto;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
@@ -25,6 +27,9 @@ public class ArticleCoreInternalController {
 
     @Autowired
     private ArticleService articleService;
+
+    @Autowired
+    private HotArticleRankService hotArticleRankService;
 
 
     @PostMapping("/author")
@@ -75,6 +80,11 @@ public class ArticleCoreInternalController {
     @PostMapping("/admin/auth_pass/{id}")
     public void manualAuditPass(@PathVariable Long id){
         articleService.manualAuditPass(id);
+    }
+
+    @PostMapping("/front/hot")
+    public List<AuthorArticleListVo> forFrontHot(@RequestBody ArticleHomeDto dto){
+        return hotArticleRankService.getHotArticlesByChannel(dto);
     }
 
 

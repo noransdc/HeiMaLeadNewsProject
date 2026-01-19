@@ -4,7 +4,6 @@ package com.heima.article.core.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.heima.model.articlecore.dto.*;
 import com.heima.model.articlecore.entity.Article;
-import com.heima.model.articlecore.vo.AdminArticleDetailVo;
 import com.heima.model.articlecore.vo.AdminArticleListVo;
 import com.heima.model.articlecore.vo.AuthorArticleDetailVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
@@ -40,6 +39,10 @@ public interface ArticleService extends IService<Article> {
     AuthorArticleDetailVo detailForAuthor(Long articleId);
 
     void downOrUp(WmNewsDto dto);
+
+    Article getValidArticle(Long articleId);
+
+    List<AuthorArticleListVo> getOrderedArticlesByIds(List<String> ids);
 
 
 }

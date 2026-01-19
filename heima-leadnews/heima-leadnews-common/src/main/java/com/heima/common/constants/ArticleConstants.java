@@ -17,5 +17,8 @@ public class ArticleConstants {
     public static final String CONTENT_ITEM_TEXT = "text";
     public static final String CONTENT_ITEM_IMG = "image";
 
+    public static final String ARTICLE_HOT_CACHE_KEY_ALL = "article:hot:all";
+    public static final String ARTICLE_HOT_CACHE_KEY_CHANNEL = "article:hot:channel";
+
 
 }

@@ -10,4 +10,6 @@ public class ArticleBehaviorMsg {
     private Long articleId;
     private String eventType;
 
+    private long eventTime;
+
 }

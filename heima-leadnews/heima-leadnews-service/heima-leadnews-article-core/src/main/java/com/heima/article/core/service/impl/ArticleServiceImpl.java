@@ -52,7 +52,10 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -298,6 +301,31 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return taskDtoList;
     }
 
+    @Override
+    public List<AuthorArticleListVo> getOrderedArticlesByIds(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)){
+            return Collections.emptyList();
+        }
+
+        List<Article> list = lambdaQuery()
+                .in(Article::getId, ids)
+                .eq(Article::getIsEnabled, 1)
+                .eq(Article::getIsDelete, 0)
+                .list();
+
+        Map<Long, Article> map = list.stream()
+                .collect(Collectors.toMap(Article::getId, Function.identity()));
+
+        List<Article> orderedList = new ArrayList<>(ids.size());
+
+        for (String id : ids) {
+            Article article = map.get(Long.parseLong(id));
+            orderedList.add(article);
+        }
+
+        return ArticleConvert.toAuthorVoList(orderedList);
+    }
+
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handlerArticleTaskCreated(ArticleTaskCreatedEvent event){
@@ -321,7 +349,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return dto;
     }
 
-    private Article getValidArticle(Long articleId) {
+    @Override
+    public Article getValidArticle(Long articleId) {
         Article article = lambdaQuery().eq(Article::getId, articleId)
                 .eq(Article::getIsEnabled, 1)
                 .eq(Article::getIsDelete, 0)

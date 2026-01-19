@@ -32,7 +32,7 @@ public class KafkaStreamConfig {
     public KafkaStreamsConfiguration defaultKafkaStreamsConfig(){
         Map<String, Object> map = new HashMap<>();
         map.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, hosts);
-        map.put(StreamsConfig.APPLICATION_ID_CONFIG, this.getGroup()+"-stream");
+        map.put(StreamsConfig.APPLICATION_ID_CONFIG, this.getGroup()+"-stream-v2");
         map.put(StreamsConfig.CLIENT_ID_CONFIG, this.getGroup()+"-stream");
         map.put(StreamsConfig.RETRIES_CONFIG, 10);
         map.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);

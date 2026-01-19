@@ -13,17 +13,13 @@ import com.heima.model.articlecore.dto.ArticleChannelAddDto;
 import com.heima.model.articlecore.dto.ArticleChannelPageDto;
 import com.heima.model.articlecore.dto.ArticleChannelUpdateDto;
 import com.heima.model.articlecore.entity.ArticleChannel;
-import com.heima.model.articlecore.vo.AdminChannelVo;
-import com.heima.model.articlecore.vo.AuthorChannelVo;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -89,7 +85,7 @@ public class ArticleChannelServiceImpl extends ServiceImpl<ArticleChannelMapper,
     }
 
     @Override
-    public ArticleChannel getChannel(Long id) {
+    public ArticleChannel getValidChannel(Long id) {
         if (id == null){
             throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID, "频道ID为null");
         }
@@ -125,7 +121,7 @@ public class ArticleChannelServiceImpl extends ServiceImpl<ArticleChannelMapper,
 
     @Override
     public void update(ArticleChannelUpdateDto dto) {
-        ArticleChannel channel = getChannel(dto.getId());
+        ArticleChannel channel = getValidChannel(dto.getId());
 
         if (StringUtils.isNotBlank(dto.getName())){
             channel.setName(dto.getName());
@@ -153,7 +149,7 @@ public class ArticleChannelServiceImpl extends ServiceImpl<ArticleChannelMapper,
 
     @Override
     public void delete(Long id) {
-        ArticleChannel channel = getChannel(id);
+        ArticleChannel channel = getValidChannel(id);
 
         boolean isExist = articleConstraintQuery.existArticleUnderChannel(id);
         if (isExist){

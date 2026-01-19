@@ -5,7 +5,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.article.core.mapper.ArticleInteractionMapper;
 import com.heima.article.core.service.ArticleInteractionService;
 import com.heima.common.enums.EventTypeEnum;
+import com.heima.common.exception.CustomException;
 import com.heima.model.articlecore.entity.ArticleInteraction;
+import com.heima.model.common.enums.AppHttpCodeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -75,6 +77,16 @@ public class ArticleInteractionServiceImpl extends ServiceImpl<ArticleInteractio
 
     }
 
+
+    @Override
+    public ArticleInteraction getByArticleId(Long articleId) {
+        ArticleInteraction interaction = getById(articleId);
+        if (interaction == null){
+            throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
+        }
+
+        return interaction;
+    }
 
     private void updateWithInt(IntSupplier updateFunc, Runnable insertFunc){
         int rows = updateFunc.getAsInt();

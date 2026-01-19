@@ -4,6 +4,7 @@ package com.heima.article.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.heima.apis.articlecore.ArticleCoreClient;
 import com.heima.apis.wemedia.IWeMediaClient;
 import com.heima.article.mapper.ApArticleConfigMapper;
 import com.heima.article.mapper.ApArticleContentMapper;
@@ -19,6 +20,7 @@ import com.heima.model.article.pojos.ApArticleConfig;
 import com.heima.model.article.pojos.ApArticleContent;
 import com.heima.model.article.pojos.ArticleVisitStreamMsg;
 import com.heima.model.article.vo.HotArticleVo;
+import com.heima.model.articlecore.vo.AuthorArticleListVo;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.wemedia.pojos.WmChannel;
@@ -58,6 +60,9 @@ public class ApArticleServiceImpl extends ServiceImpl<ApArticleMapper, ApArticle
 
     @Autowired
     private CacheService cacheService;
+
+    @Autowired
+    private ArticleCoreClient articleCoreClient;
 
 
     @Override
@@ -204,6 +209,13 @@ public class ApArticleServiceImpl extends ServiceImpl<ApArticleMapper, ApArticle
         }
 
     }
+
+
+    @Override
+    public List<AuthorArticleListVo> getHotList(ArticleHomeDto dto) {
+        return articleCoreClient.forFrontHot(dto);
+    }
+
 
     private void updateArticleScoreInDB(ApArticle apArticle, ArticleVisitStreamMsg msg){
         Integer views = apArticle.getViews();

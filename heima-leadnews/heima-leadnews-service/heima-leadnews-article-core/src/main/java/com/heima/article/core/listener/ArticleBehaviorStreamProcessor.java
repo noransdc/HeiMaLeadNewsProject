@@ -2,6 +2,7 @@ package com.heima.article.core.listener;
 
 
 import com.alibaba.fastjson.JSON;
+import com.heima.article.core.impl.ArticleEventTimeExtractor;
 import com.heima.common.constants.ArticleBehaviorConstant;
 import com.heima.common.enums.EventTypeEnum;
 import com.heima.model.articlecore.dto.ArticleBehaviorAgg;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
+import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.kstream.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,7 +29,14 @@ public class ArticleBehaviorStreamProcessor {
 
     @Bean
     public KStream<String, String> kafkaStreams(StreamsBuilder streamsBuilder) {
-        KStream<String, String> source = streamsBuilder.stream(ArticleBehaviorConstant.ARTICLE_BEHAVIOR_STREAM);
+//        KStream<String, String> source = streamsBuilder.stream(ArticleBehaviorConstant.ARTICLE_BEHAVIOR_EVENT);
+
+        KStream<String, String> source = streamsBuilder.stream(ArticleBehaviorConstant.ARTICLE_BEHAVIOR_EVENT,
+                Consumed.with(Serdes.String(),
+                        Serdes.String(),
+                        new ArticleEventTimeExtractor(),
+                        Topology.AutoOffsetReset.EARLIEST
+                ));
 
         JsonSerde<ArticleBehaviorAgg> aggSerde =
                 new JsonSerde<>(ArticleBehaviorAgg.class);
@@ -58,7 +67,10 @@ public class ArticleBehaviorStreamProcessor {
                 .filter((key, value)-> key != null)
                 .groupByKey()
                 // 真实项目里“合理使用”的时间窗口
-                .windowedBy(TimeWindows.of(Duration.ofSeconds(10)))
+                .windowedBy(
+                        TimeWindows.of(Duration.ofSeconds(10))
+                                .grace(Duration.ofSeconds(3))
+                )
                 .aggregate(
                         new Initializer<ArticleBehaviorAgg>() {
                             @Override
@@ -95,6 +107,15 @@ public class ArticleBehaviorStreamProcessor {
                             }
                         },
                         Materialized.with(Serdes.String(), aggSerde))
+                //窗口没结束之前，
+                //所有中间结果都不向下游输出；
+                //窗口关闭时，只 emit 一次最终结果。
+                //Kafka Streams 2.5.1 suppress(untilWindowCloses) only supports unbounded buffer.
+                //If memory pressure appears, upgrade streams to >= 2.8
+                //and switch to maxBytes buffer.
+                .suppress(
+                        Suppressed.untilWindowCloses(Suppressed.BufferConfig.unbounded())
+                )
                 .toStream()
                 // 5. 再打一层日志
                 .peek((windowedKey, agg)->{

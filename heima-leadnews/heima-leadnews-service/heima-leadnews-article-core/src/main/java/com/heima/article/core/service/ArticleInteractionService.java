@@ -10,4 +10,6 @@ public interface ArticleInteractionService extends IService<ArticleInteraction> 
 
     void add(Long articleId, String eventType);
 
+    ArticleInteraction getByArticleId(Long articleId);
+
 }

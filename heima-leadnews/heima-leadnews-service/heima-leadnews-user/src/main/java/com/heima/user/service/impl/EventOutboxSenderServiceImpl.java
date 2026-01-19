@@ -13,6 +13,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneId;
 import java.util.List;
 
 
@@ -43,6 +44,14 @@ public class EventOutboxSenderServiceImpl implements EventOutboxSenderService {
                 msg.setEventId(eventId);
                 msg.setArticleId(Long.parseLong(item.getAggregateId()));
                 msg.setEventType(item.getEventType());
+
+                long timestamp = item.getCreateTime()
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli();
+
+                msg.setEventTime(timestamp);
+
                 kafkaTemplate.send(ArticleBehaviorConstant.ARTICLE_BEHAVIOR_EVENT, JSON.toJSONString(msg));
 
                 eventOutboxService.markSent(eventId);

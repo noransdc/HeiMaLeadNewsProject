@@ -1,6 +1,7 @@
 package com.heima.apis.articlecore;
 
 
+import com.heima.model.article.dtos.ArticleHomeDto;
 import com.heima.model.articlecore.dto.*;
 import com.heima.model.articlecore.vo.AdminArticleListVo;
 import com.heima.model.articlecore.vo.AuthorArticleDetailVo;
@@ -52,6 +53,9 @@ public interface ArticleCoreClient {
 
     @PostMapping("/admin/auth_pass/{id}")
     void manualAuditPass(@PathVariable Long id);
+
+    @PostMapping("/front/hot")
+    List<AuthorArticleListVo> forFrontHot(@RequestBody ArticleHomeDto dto);
 
 
 }
