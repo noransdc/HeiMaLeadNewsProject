@@ -7,12 +7,13 @@ import com.heima.model.articlecore.entity.ArticleContent;
 import com.heima.model.articlecore.vo.AdminArticleListVo;
 import com.heima.model.articlecore.vo.AuthorArticleDetailVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
+import com.heima.model.articlecore.vo.FrontArticleListVo;
 import com.heima.model.common.dtos.PageResponseResult;
+import com.heima.model.wemedia.pojos.WmUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -60,6 +61,20 @@ public final class ArticleConvert {
         return vo;
     }
 
+    public static FrontArticleListVo toFrontArticleVo(Article article, String authorName){
+        if (article == null){
+            return null;
+        }
+
+        FrontArticleListVo vo = new FrontArticleListVo();
+
+        vo.setId(article.getId());
+        vo.setTitle(article.getTitle());
+        vo.setImages(article.getCoverImgUrl());
+        vo.setAuthorName(authorName);
+        return vo;
+    }
+
     public static List<AdminArticleListVo> toAdminVoList(List<Article> list){
         if (CollectionUtils.isEmpty(list)){
             return Collections.emptyList();
@@ -78,6 +93,21 @@ public final class ArticleConvert {
         return list.stream()
                 .map(ArticleConvert::toAuthorListVo)
                 .collect(Collectors.toList());
+    }
+
+    public static List<FrontArticleListVo> toFrontVoList(List<Article> list, Map<Long, String> nameMap){
+        if (CollectionUtils.isEmpty(list)){
+            return Collections.emptyList();
+        }
+
+        List<FrontArticleListVo> voList = new ArrayList<>();
+
+        for (Article article : list) {
+            FrontArticleListVo vo = toFrontArticleVo(article, nameMap.get(article.getAuthorId()));
+            voList.add(vo);
+        }
+
+        return voList;
     }
 
     public static PageResponseResult<List<AdminArticleListVo>> toAdminVoPage(PageResponseResult<List<Article>> pageRsp){

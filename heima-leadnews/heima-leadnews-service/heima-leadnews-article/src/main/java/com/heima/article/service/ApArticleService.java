@@ -7,6 +7,7 @@ import com.heima.model.article.pojos.ApArticle;
 import com.heima.model.article.pojos.ArticleVisitStreamMsg;
 import com.heima.model.article.vo.HotArticleVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
+import com.heima.model.articlecore.vo.FrontArticleListVo;
 import com.heima.model.common.dtos.ResponseResult;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +33,6 @@ public interface ApArticleService extends IService<ApArticle> {
 
     void updateRedisHotArticle(ArticleVisitStreamMsg msg);
 
-    List<AuthorArticleListVo> getHotList(ArticleHomeDto dto);
+    List<FrontArticleListVo> getHotList(ArticleHomeDto dto);
 
 }

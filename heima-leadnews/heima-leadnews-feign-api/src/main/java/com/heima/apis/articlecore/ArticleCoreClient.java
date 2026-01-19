@@ -6,6 +6,7 @@ import com.heima.model.articlecore.dto.*;
 import com.heima.model.articlecore.vo.AdminArticleListVo;
 import com.heima.model.articlecore.vo.AuthorArticleDetailVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
+import com.heima.model.articlecore.vo.FrontArticleListVo;
 import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
@@ -55,7 +56,7 @@ public interface ArticleCoreClient {
     void manualAuditPass(@PathVariable Long id);
 
     @PostMapping("/front/hot")
-    List<AuthorArticleListVo> forFrontHot(@RequestBody ArticleHomeDto dto);
+    List<FrontArticleListVo> forFrontHot(@RequestBody ArticleHomeDto dto);
 
 
 }

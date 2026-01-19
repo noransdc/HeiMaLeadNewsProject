@@ -5,6 +5,7 @@ import com.heima.article.service.ApArticleService;
 import com.heima.common.constants.ArticleConstants;
 import com.heima.model.article.dtos.ArticleHomeDto;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
+import com.heima.model.articlecore.vo.FrontArticleListVo;
 import com.heima.model.common.dtos.ResponseResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -28,7 +29,7 @@ public class ArticleHomeController {
     @ApiOperation("获取最新文章列表")
     @PostMapping({"/load", "/load/"})
     public ResponseResult load(@RequestBody ArticleHomeDto dto){
-        List<AuthorArticleListVo> hotList = apArticleService.getHotList(dto);
+        List<FrontArticleListVo> hotList = apArticleService.getHotList(dto);
         return ResponseResult.okResult(hotList);
     }
 

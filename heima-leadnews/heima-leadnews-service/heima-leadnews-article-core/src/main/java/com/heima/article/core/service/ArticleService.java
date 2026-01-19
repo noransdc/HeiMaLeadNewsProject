@@ -42,7 +42,7 @@ public interface ArticleService extends IService<Article> {
 
     Article getValidArticle(Long articleId);
 
-    List<AuthorArticleListVo> getOrderedArticlesByIds(List<String> ids);
+    List<Article> getOrderedArticlesByIds(List<String> ids);
 
 
 }

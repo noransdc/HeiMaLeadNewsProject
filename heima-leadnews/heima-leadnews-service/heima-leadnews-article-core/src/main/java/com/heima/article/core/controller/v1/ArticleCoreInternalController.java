@@ -11,6 +11,7 @@ import com.heima.model.articlecore.dto.AuthorArticlePageDto;
 import com.heima.model.articlecore.vo.AdminArticleListVo;
 import com.heima.model.articlecore.vo.AuthorArticleDetailVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
+import com.heima.model.articlecore.vo.FrontArticleListVo;
 import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
@@ -83,7 +84,7 @@ public class ArticleCoreInternalController {
     }
 
     @PostMapping("/front/hot")
-    public List<AuthorArticleListVo> forFrontHot(@RequestBody ArticleHomeDto dto){
+    public List<FrontArticleListVo> forFrontHot(@RequestBody ArticleHomeDto dto){
         return hotArticleRankService.getHotArticlesByChannel(dto);
     }
 

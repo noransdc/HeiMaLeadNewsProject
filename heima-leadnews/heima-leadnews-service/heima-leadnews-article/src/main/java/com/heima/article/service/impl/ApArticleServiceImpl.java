@@ -21,6 +21,7 @@ import com.heima.model.article.pojos.ApArticleContent;
 import com.heima.model.article.pojos.ArticleVisitStreamMsg;
 import com.heima.model.article.vo.HotArticleVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
+import com.heima.model.articlecore.vo.FrontArticleListVo;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.wemedia.pojos.WmChannel;
@@ -212,7 +213,7 @@ public class ApArticleServiceImpl extends ServiceImpl<ApArticleMapper, ApArticle
 
 
     @Override
-    public List<AuthorArticleListVo> getHotList(ArticleHomeDto dto) {
+    public List<FrontArticleListVo> getHotList(ArticleHomeDto dto) {
         return articleCoreClient.forFrontHot(dto);
     }
 

@@ -302,7 +302,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    public List<AuthorArticleListVo> getOrderedArticlesByIds(List<String> ids) {
+    public List<Article> getOrderedArticlesByIds(List<String> ids) {
         if (CollectionUtils.isEmpty(ids)){
             return Collections.emptyList();
         }
@@ -323,7 +323,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             orderedList.add(article);
         }
 
-        return ArticleConvert.toAuthorVoList(orderedList);
+        return orderedList;
     }
 
     @Async
