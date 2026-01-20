@@ -172,8 +172,8 @@ public class HotArticleRankServiceImpl implements HotArticleRankService {
      */
     @Override
     public void handleArticleUpdated(Long articleId) {
-        // TODO: 2026/1/20  implementation later
-
+        String key = "article:info:" + articleId;
+        stringRedisTemplate.delete(key);
     }
 
 

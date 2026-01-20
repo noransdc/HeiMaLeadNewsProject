@@ -51,6 +51,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -175,6 +177,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 2. 通知派生视图失效
         hotArticleRankService.handleArticleUpdated(dto.getId());
 
+
+        // 5. 注册事务提交后的缓存失效
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        hotArticleRankService.handleArticleUpdated(dto.getId());
+                    }
+                }
+        );
 
     }
 
