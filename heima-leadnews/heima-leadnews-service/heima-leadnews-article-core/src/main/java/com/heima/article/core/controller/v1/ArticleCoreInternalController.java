@@ -4,10 +4,7 @@ package com.heima.article.core.controller.v1;
 import com.heima.article.core.service.ArticleService;
 import com.heima.article.core.service.HotArticleRankService;
 import com.heima.model.article.dtos.ArticleHomeDto;
-import com.heima.model.articlecore.dto.AdminArticlePageDto;
-import com.heima.model.articlecore.dto.ArticleAuthFailDto;
-import com.heima.model.articlecore.dto.ArticleSubmitDto;
-import com.heima.model.articlecore.dto.AuthorArticlePageDto;
+import com.heima.model.articlecore.dto.*;
 import com.heima.model.articlecore.vo.AdminArticleListVo;
 import com.heima.model.articlecore.vo.AuthorArticleDetailVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
@@ -36,6 +33,11 @@ public class ArticleCoreInternalController {
     @PostMapping("/author")
     public void submit(@RequestBody ArticleSubmitDto dto){
         articleService.submit(dto);
+    }
+
+    @PutMapping("/author")
+    public void update(@RequestBody ArticleUpdateDto dto){
+        articleService.update(dto);
     }
 
     @PostMapping("/pending-audit-ids")

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.apis.articlecore.ArticleCoreClient;
 import com.heima.common.exception.CustomException;
 import com.heima.model.articlecore.dto.ArticleSubmitDto;
+import com.heima.model.articlecore.dto.ArticleUpdateDto;
 import com.heima.model.articlecore.dto.AuthorArticlePageDto;
 import com.heima.model.articlecore.vo.AuthorArticleDetailVo;
 import com.heima.model.articlecore.vo.AuthorArticleListVo;
@@ -37,7 +38,7 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 
     @Override
     public AuthorArticleDetailVo getArticleVo(Long articleId) {
-        if (articleId == null){
+        if (articleId == null) {
             throw new CustomException(AppHttpCodeEnum.PARAM_INVALID, "文章id不能为null");
         }
         return articleCoreClient.detailForAuthor(articleId);
@@ -47,7 +48,7 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
     @Override
     public PageResponseResult<List<AuthorArticleListVo>> getPageListRemote(WmNewsPageReqDto dto) {
         WmUser wmUser = WmThreadLocalUtil.getUser();
-        if (wmUser == null){
+        if (wmUser == null) {
             throw new CustomException(AppHttpCodeEnum.USER_NOT_EXIST);
         }
         AuthorArticlePageDto authorArticlePageDto = new AuthorArticlePageDto();
@@ -129,42 +130,67 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 
     @Override
     public void submitRemote(WmNewsDto dto) {
-        if (dto == null){
+        if (dto == null) {
             throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
         }
 
         WmUser wmUser = WmThreadLocalUtil.getUser();
-        if (wmUser == null){
+        if (wmUser == null) {
             throw new CustomException(AppHttpCodeEnum.USER_NOT_EXIST);
         }
 
-        String title = dto.getTitle();
-        String content = dto.getContent();
-        Integer channelId = dto.getChannelId();
-        Short draftStatus = dto.getStatus();
-        Short coverType = dto.getType();
-
-        if (StringUtils.isBlank(title) || StringUtils.isBlank(content) || channelId == null || draftStatus == null || coverType == null){
+        if (StringUtils.isBlank(dto.getTitle()) || StringUtils.isBlank(dto.getContent())
+                || dto.getChannelId() == null || dto.getStatus() == null || dto.getType() == null) {
             throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
         }
 
-        ArticleSubmitDto articleSubmitDto = new ArticleSubmitDto();
-        articleSubmitDto.setTitle(dto.getTitle());
-        articleSubmitDto.setContent(dto.getContent());
-        articleSubmitDto.setChannelId((long)channelId);
-        articleSubmitDto.setAuthorId((long) wmUser.getId());
-        articleSubmitDto.setPublishTime(dto.getPublishTime());
-        articleSubmitDto.setImages(dto.getImages());
-        articleSubmitDto.setLabel(dto.getLabels());
-        articleSubmitDto.setCoverType((int)coverType);
-
-        if (draftStatus == 0){
-            articleSubmitDto.setIsDraft(1);
+        if (dto.getId() == null) {
+            addArticle(dto, wmUser.getId());
         } else {
-            articleSubmitDto.setIsDraft(0);
+            updateArticle(dto, wmUser.getId());
+        }
+    }
+
+    private void addArticle(WmNewsDto dto, Long authorId) {
+        ArticleSubmitDto submitDto = new ArticleSubmitDto();
+        submitDto.setTitle(dto.getTitle());
+        submitDto.setContent(dto.getContent());
+        submitDto.setChannelId(dto.getChannelId());
+        submitDto.setAuthorId(authorId);
+        submitDto.setPublishTime(dto.getPublishTime());
+        submitDto.setImages(dto.getImages());
+        submitDto.setLabel(dto.getLabels());
+        submitDto.setCoverType(dto.getType());
+
+        if (dto.getStatus() == 0) {
+            submitDto.setIsDraft(1);
+        } else {
+            submitDto.setIsDraft(0);
         }
 
-        articleCoreClient.submit(articleSubmitDto);
+        articleCoreClient.submit(submitDto);
+
+    }
+
+    private void updateArticle(WmNewsDto dto, Long authorId) {
+        ArticleUpdateDto updateDto = new ArticleUpdateDto();
+        updateDto.setId(dto.getId());
+        updateDto.setTitle(dto.getTitle());
+        updateDto.setContent(dto.getContent());
+        updateDto.setChannelId(dto.getChannelId());
+        updateDto.setAuthorId(authorId);
+        updateDto.setPublishTime(dto.getPublishTime());
+        updateDto.setImages(dto.getImages());
+        updateDto.setLabel(dto.getLabels());
+        updateDto.setCoverType(dto.getType());
+
+        if (dto.getStatus() == 0) {
+            updateDto.setIsDraft(1);
+        } else {
+            updateDto.setIsDraft(0);
+        }
+
+        articleCoreClient.update(updateDto);
     }
 
 

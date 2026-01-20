@@ -11,10 +11,7 @@ import com.heima.model.common.dtos.PageRequestDto;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.schedule.dto.ArticleAuditCompensateDto;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,6 +24,9 @@ public interface ArticleCoreClient {
 
     @PostMapping("/author")
     void submit(@RequestBody ArticleSubmitDto dto);
+
+    @PutMapping("/author")
+    void update(@RequestBody ArticleUpdateDto dto);
 
     @PostMapping("/pending-audit-ids")
     List<ArticleAuditCompensateDto> getArticleAuditCompensateList(@RequestBody PageRequestDto dto);

@@ -3,7 +3,9 @@ package com.heima.article.core.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.apis.schedule.ScheduleTaskClient;
@@ -80,7 +82,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private ArticleAuditService articleAuditService;
 
 
-
     @Transactional
     @Override
     public void submit(ArticleSubmitDto dto) {
@@ -107,9 +108,67 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     }
 
+    @Transactional
+    @Override
+    public void update(ArticleUpdateDto dto) {
+        if (dto == null) {
+            throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID);
+        }
+
+        if (dto.getId() == null) {
+            throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID, "文章id不能为null");
+        }
+
+        validateRequestParam(dto);
+
+        Article article = getValidArticle(dto.getId());
+
+        ArticleAuditEnum auditEnum = ArticleAuditEnum.codeOf(article.getAuditStatus());
+
+        if (auditEnum != ArticleAuditEnum.DRAFT && auditEnum != ArticleAuditEnum.PENDING_AUDIT) {
+            throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID, "文章当前不能被修改");
+        }
+
+        ArticleCoverEnum coverEnum = ArticleCoverEnum.codeOf(dto.getCoverType());
+        if (coverEnum == null) {
+            throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID);
+        }
+
+
+
+
+        String coverImgUrlStr = getCoverImgUrl(coverEnum, dto);
+
+        //在核心业务表上我避免使用全量 update，
+        //而是采用定向更新的方式，
+        //明确每次更新的业务语义，
+        //同时把 update_time 这类系统字段完全交给数据库维护，
+        //避免 ORM 回写旧值导致的隐式数据问题。
+        LambdaUpdateWrapper<Article> articleUpdate = Wrappers.lambdaUpdate();
+        articleUpdate.eq(Article::getId, dto.getId())
+                .set(Article::getTitle, dto.getTitle())
+                .set(Article::getLabel, dto.getLabel())
+                .set(Article::getChannelId, dto.getChannelId())
+                .set(Article::getCoverImgUrl, coverImgUrlStr)
+                .set(Article::getCoverType, dto.getCoverType());
+
+        // TODO: 2026/1/20  修改发布时间涉及到定时任务的更新或重建，详情见 修改发布时间的调度规则.md
+//        article.setPublishTime(dto.getPublishTime());
+
+        update(articleUpdate);
+
+        LambdaQueryWrapper<ArticleContent> contentQuery = Wrappers.lambdaQuery();
+        contentQuery.eq(ArticleContent::getArticleId, article.getId());
+        ArticleContent articleContent = articleContentMapper.selectOne(contentQuery);
+        articleContent.setContent(dto.getContent());
+
+        articleContentMapper.updateById(articleContent);
+
+    }
+
     @Override
     public PageResponseResult<List<AuthorArticleListVo>> pageOwnArticles(AuthorArticlePageDto dto) {
-        if (dto.getAuthorId() == null){
+        if (dto.getAuthorId() == null) {
             throw new CustomException(AppHttpCodeEnum.RPC_AUTHOR_ID_NULL);
         }
         ArticlePageQuery pageQuery = new ArticlePageQuery();
@@ -125,7 +184,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         IPage<Article> pageRsp = listPageGeneric(pageQuery);
 
         PageResponseResult<List<AuthorArticleListVo>> result = new PageResponseResult<>(dto.getPage(), dto.getSize(),
-                (int)pageRsp.getTotal());
+                (int) pageRsp.getTotal());
         result.setData(ArticleConvert.toAuthorVoList(pageRsp.getRecords()));
 
         return result;
@@ -135,12 +194,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public PageResponseResult<List<AdminArticleListVo>> pageAllArticles(AdminArticlePageDto dto) {
 
         //前端入参 “待人工审核” 转为 “自动审核失败”
-        if (dto.getStatus() != null && dto.getStatus() == 3){
+        if (dto.getStatus() != null && dto.getStatus() == 3) {
             dto.setStatus(ArticleAuditEnum.AUTO_AUDIT_FAILED.getCode());
         }
 
         //前端入参 “人工审核通过” 转为 “审核成功”
-        if (dto.getStatus() != null && dto.getStatus() == 4){
+        if (dto.getStatus() != null && dto.getStatus() == 4) {
             dto.setStatus(ArticleAuditEnum.AUDIT_SUCCESS.getCode());
         }
 
@@ -153,7 +212,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         IPage<Article> pageRsp = listPageGeneric(pageQuery);
 
         PageResponseResult<List<AdminArticleListVo>> result = new PageResponseResult<>(dto.getPage(), dto.getSize(),
-                (int)pageRsp.getTotal());
+                (int) pageRsp.getTotal());
         result.setData(ArticleConvert.toAdminVoList(pageRsp.getRecords()));
 
         return result;
@@ -179,13 +238,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         query.eq(dto.getChannelId() != null, Article::getChannelId, dto.getChannelId());
         query.eq(dto.getAuditStatus() != null, Article::getAuditStatus, dto.getAuditStatus());
 
-        if (StringUtils.isNotBlank(dto.getKeyword())){
+        if (StringUtils.isNotBlank(dto.getKeyword())) {
             query.like(Article::getTitle, dto.getKeyword());
         }
 
         LocalDate startDay = dto.getBeginPubDate();
         LocalDate endDay = dto.getEndPubDate();
-        if (startDay != null && endDay != null){
+        if (startDay != null && endDay != null) {
             LocalDateTime startTime = startDay.atStartOfDay();
             LocalDateTime endTime = endDay.plusDays(1).atStartOfDay();
             query.ge(Article::getPublishTime, startTime)
@@ -215,7 +274,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             throw new CustomException(AppHttpCodeEnum.RPC_PARAM_INVALID, "文章不存在");
         }
 
-        if (article.getAuditStatus() != ArticleAuditEnum.PENDING_AUDIT.getCode()){
+        if (article.getAuditStatus() != ArticleAuditEnum.PENDING_AUDIT.getCode()) {
             log.info("article {} already audited, skip", articleId);
             return;
         }
@@ -230,7 +289,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             ArticleAuditRsp auditRsp = articleAuditService.audit(article, articleContent);
             updateAuditStatus(articleId, auditRsp.getAuditStatus(), auditRsp.getErrorMsg());
 
-        } catch (CustomException e){
+        } catch (CustomException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
         }
 
@@ -240,14 +299,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public void publish(Long articleId) {
         Article article = getById(articleId);
-        if (article.getAuditStatus() != ArticleAuditEnum.AUDIT_SUCCESS.getCode()){
+        if (article.getAuditStatus() != ArticleAuditEnum.AUDIT_SUCCESS.getCode()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "not ready");
         }
 
         try {
             updateAuditStatus(articleId, ArticleAuditEnum.PUBLISHED.getCode(), null);
 
-        } catch (CustomException e){
+        } catch (CustomException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
         }
 
@@ -303,7 +362,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public List<Article> getOrderedArticlesByIds(List<String> ids) {
-        if (CollectionUtils.isEmpty(ids)){
+        if (CollectionUtils.isEmpty(ids)) {
             return Collections.emptyList();
         }
 
@@ -328,20 +387,20 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handlerArticleTaskCreated(ArticleTaskCreatedEvent event){
+    public void handlerArticleTaskCreated(ArticleTaskCreatedEvent event) {
         log.info("handlerArticleTaskCreated, event:{}", event);
         ArticleTaskDto dto = convertToArticleTaskDto(event.getArticle());
         try {
             scheduleTaskClient.addScheduleTask(dto);
             log.info("scheduleTaskClient.addScheduleTask dto:{}", dto);
 
-        } catch (Exception e){
+        } catch (Exception e) {
             log.info("addToScheduleTask:{}", e.getMessage());
         }
 
     }
 
-    private ArticleTaskDto convertToArticleTaskDto(Article article){
+    private ArticleTaskDto convertToArticleTaskDto(Article article) {
         ArticleTaskDto dto = new ArticleTaskDto();
         dto.setArticleId(article.getId());
         dto.setPublishTime(article.getPublishTime());
@@ -468,7 +527,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public AuthorArticleDetailVo detailForAuthor(Long articleId) {
-        if (articleId == null){
+        if (articleId == null) {
             throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
         }
 
@@ -477,13 +536,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .eq(Article::getIsEnabled, 1)
                 .one();
 
-        if (article == null){
+        if (article == null) {
             throw new CustomException(AppHttpCodeEnum.PARAM_INVALID, "文章不存在");
         }
 
         ArticleContent articleContent = articleContentMapper.selectById(articleId);
 
-        if (articleContent == null){
+        if (articleContent == null) {
             throw new CustomException(AppHttpCodeEnum.PARAM_INVALID, "文章不存在");
         }
 
@@ -506,7 +565,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             throw new CustomException(AppHttpCodeEnum.PARAM_INVALID, "文章未上架");
         }
 
-        Short enable = dto.getEnable();
+        Integer enable = dto.getEnable();
         if (enable == null || (enable != 0 && enable != 1)) {
             throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
         }
