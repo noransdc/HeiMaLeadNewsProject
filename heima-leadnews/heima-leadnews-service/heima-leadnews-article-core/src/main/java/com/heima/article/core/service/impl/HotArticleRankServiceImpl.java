@@ -144,6 +144,95 @@ public class HotArticleRankServiceImpl implements HotArticleRankService {
 
     }
 
+
+
+    /**
+     * 文章内容修改后的缓存处理（Update 场景）
+     *
+     * Cache Write Rules：
+     *
+     * 一、语义规则（模式层）
+     * 1. 采用 Cache Aside 模式，数据库为唯一事实源
+     * 2. 写操作不直接更新缓存内容，只做缓存失效
+     * 3. 修改仅影响文章内容本身，不改变文章可见性
+     *
+     * 二、工程实现策略（延迟双删）
+     * 1. 为降低并发读写下旧数据回填缓存的风险，
+     *    工程上采用延迟双删策略：
+     *    - 第一次删除 article:info 缓存
+     *    - 更新数据库内容
+     *    - 异步延迟一段时间（如 500ms ~ 2s，视系统复杂度而定）
+     *    - 第二次删除 article:info 缓存作为兜底
+     *
+     * 三、约束与说明
+     * 1. 该写路径为低频操作，允许短暂缓存 miss
+     * 2. 允许短暂不一致，保证最终一致
+     * 3. 不负责热榜结构维护（ZSET 不受影响）
+     * 4. 不处理文章下架/删除语义
+     */
+    @Override
+    public void handleArticleUpdated(Long articleId) {
+        // TODO: 2026/1/20  implementation later
+
+    }
+
+
+    /**
+     * 下架后，需要：
+     * 删除文章基本信息缓存，避免 Redis 命中
+     * 从热榜 ZSET 中剔除该文章
+     * 不在 down 写路径中做热榜重算或补位，补位交由热榜生成机制自然完成
+     * @param articleId
+     * @param channelId
+     */
+    @Override
+    public void handleArticleDisabled(Long articleId, Long channelId) {
+        //Step 3：缓存失效策略（可补偿）
+        //规则目标：
+        //任何用户请求都不应该再从缓存中拿到文章
+        //方法规则：
+        //直接删除：
+        //DEL article:detail:{id}
+        //不要尝试“更新缓存为 DOWN 状态”，原因：
+        //缓存是副本，不是状态机
+        //写路径越简单越可靠
+
+        String key = "article:info:" + articleId;
+        stringRedisTemplate.delete(key);
+
+        putCacheNullId(articleId);
+
+        //Step 4：热榜剔除（核心业务动作）
+        //规则目标：
+        //下架文章立即失去曝光能力
+        //方法规则：
+        //从所有热榜 ZSET 中 ZREM
+        //不做分数调整，不做惰性清理
+        //这是一个强一致业务规则。
+
+        String allKey = ArticleConstants.ARTICLE_HOT_CACHE_KEY_ALL;
+        stringRedisTemplate.opsForZSet().remove(allKey, articleId);
+
+        String channelKey = ArticleConstants.ARTICLE_HOT_CACHE_KEY_CHANNEL + channelId;
+        stringRedisTemplate.opsForZSet().remove(channelKey, articleId);
+
+        //Step 5：补偿与兜底设计（不是立刻实现，但规则要有）
+        //你现在不一定实现，但规则要提前想清楚：
+        //如果 Redis 操作失败：
+        //不回滚 DB
+        //通过：
+        //MQ
+        //延迟任务
+        //定时扫描 DOWN 状态文章补偿清理
+        //规则优先级：
+        //DB 正确 > Redis 最终一致
+        //详情见ArticleDisableCacheCleanupJob
+
+
+    }
+
+
+
     private String getAuthorName(Long authorId){
         String key = "author:info:" + authorId;
         Object value = stringRedisTemplate.opsForHash().get(key, "name");
@@ -156,7 +245,7 @@ public class HotArticleRankServiceImpl implements HotArticleRankService {
             String name = nameMap.get(authorId);
             if (StringUtils.isNotBlank(name)){
                 stringRedisTemplate.opsForHash().put(key, "name", name);
-                stringRedisTemplate.expire(key, 1, TimeUnit.DAYS);
+                stringRedisTemplate.expire(key, 5, TimeUnit.MINUTES);
                 return name;
             }
         }
@@ -205,7 +294,7 @@ public class HotArticleRankServiceImpl implements HotArticleRankService {
         map.put("authorName", Optional.ofNullable(vo.getAuthorName()).orElse(""));
 
         stringRedisTemplate.opsForHash().putAll(key, map);
-        stringRedisTemplate.expire(key, 1, TimeUnit.DAYS);
+        stringRedisTemplate.expire(key, 5, TimeUnit.MINUTES);
     }
 
     private void putCacheNullId(Long articleId) {

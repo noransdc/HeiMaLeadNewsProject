@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.apis.schedule.ScheduleTaskClient;
 import com.heima.article.core.convert.ArticleConvert;
+import com.heima.article.core.service.HotArticleRankService;
 import com.heima.common.constants.ArticleTaskType;
 import com.heima.article.core.mapper.ArticleContentMapper;
 import com.heima.article.core.mapper.ArticleMapper;
@@ -41,9 +42,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
@@ -80,6 +83,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Autowired
     private ArticleAuditService articleAuditService;
+
+    @Autowired
+    private HotArticleRankService hotArticleRankService;
+
+    @Autowired
+    @Qualifier("articleCoreExecutor")
+    private ThreadPoolTaskExecutor taskExecutor;
 
 
     @Transactional
@@ -135,8 +145,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
 
 
-
-
         String coverImgUrlStr = getCoverImgUrl(coverEnum, dto);
 
         //在核心业务表上我避免使用全量 update，
@@ -163,6 +171,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         articleContent.setContent(dto.getContent());
 
         articleContentMapper.updateById(articleContent);
+
+        // 2. 通知派生视图失效
+        hotArticleRankService.handleArticleUpdated(dto.getId());
+
 
     }
 
@@ -385,6 +397,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return orderedList;
     }
 
+    @Override
+    public List<Article> listForDisable() {
+        return lambdaQuery().eq(Article::getIsEnabled, 0)
+                .list();
+    }
+
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handlerArticleTaskCreated(ArticleTaskCreatedEvent event) {
@@ -531,14 +549,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
         }
 
-        Article article = lambdaQuery().eq(Article::getId, articleId)
-                .eq(Article::getIsDelete, 0)
-                .eq(Article::getIsEnabled, 1)
-                .one();
-
-        if (article == null) {
-            throw new CustomException(AppHttpCodeEnum.PARAM_INVALID, "文章不存在");
-        }
+        Article article = getValidArticle(articleId);
 
         ArticleContent articleContent = articleContentMapper.selectById(articleId);
 
@@ -550,37 +561,53 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
 
+    /**
+     * 文章下架（down）写路径设计：
+     * DB 状态切换为 DOWN
+     * 同步删除文章缓存 + 热榜 ZSET（失败重试 1～2 次）
+     * 定时任务扫描 DOWN 状态文章，兜底清理 Redis
+     * 读路径统一校验 isEnabled，保证最终一致
+     */
     @Override
     public void downOrUp(WmNewsDto dto) {
-        if (dto == null || dto.getId() == null) {
+        //Step 1：校验下架合法性（规则层）
+        //在任何技术动作之前，先明确规则：
+        //是否存在该文章
+        //当前状态是否允许下架
+        //已下架 → 幂等返回
+        //已删除 → 拒绝 / 特殊处理
+        //操作人权限是否合法：文章服务不判断，由作者服务及管理后台服务自己判断用户权限
+        //这是规则校验层，不涉及 Redis
+        if (dto == null || dto.getId() == null || dto.getEnable() == null) {
             throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
         }
 
-        Article wmNews = getById(dto.getId());
-        if (wmNews == null) {
-            throw new CustomException(AppHttpCodeEnum.DATA_NOT_EXIST, "文章不存在");
+        if (dto.getEnable() != 0 && dto.getEnable() != 1){
+            throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
         }
 
-        if (WmNews.Status.PUBLISHED.getCode() != wmNews.getAuditStatus()) {
+        Article article = getValidArticle(dto.getId());
+
+        if (ArticleAuditEnum.PUBLISHED.getCode() != article.getAuditStatus()) {
             throw new CustomException(AppHttpCodeEnum.PARAM_INVALID, "文章未上架");
         }
 
-        Integer enable = dto.getEnable();
-        if (enable == null || (enable != 0 && enable != 1)) {
-            throw new CustomException(AppHttpCodeEnum.PARAM_INVALID);
-        }
-
-        lambdaUpdate().set(Article::getIsEnabled, enable)
+        //Step 2：数据库状态切换（事实变更）
+        //这是整个流程中唯一必须成功的步骤：
+        //更新文章状态为 DOWN
+        //记录下架时间、原因、操作者
+        //一旦这一步成功，系统“逻辑上已经下架”
+        //后续 Redis 失败，只是“短暂脏读风险”，不是逻辑错误。
+        lambdaUpdate()
                 .eq(Article::getId, dto.getId())
+                .set(Article::getIsEnabled, dto.getEnable())
                 .update();
 
-//        if (wmNews.getArticleId() != null) {
-//            ApArticleEnable apArticleEnable = new ApArticleEnable();
-//            apArticleEnable.setArticleId(wmNews.getArticleId());
-//            apArticleEnable.setEnable(enable);
-//            kafkaTemplate.send(WmNewsMessageConstants.WM_NEWS_UP_OR_DOWN_TOPIC, JSON.toJSONString(apArticleEnable));
-//            log.info("kafka send:{}", JSON.toJSONString(apArticleEnable));
-//        }
+
+        if (dto.getEnable() == 0){
+            //Step 3：缓存失效策略（可补偿）
+            hotArticleRankService.handleArticleDisabled(dto.getId(), article.getChannelId());
+        }
 
     }
 

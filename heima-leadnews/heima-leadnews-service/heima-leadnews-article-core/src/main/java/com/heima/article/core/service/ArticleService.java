@@ -46,5 +46,7 @@ public interface ArticleService extends IService<Article> {
 
     List<Article> getOrderedArticlesByIds(List<String> ids);
 
+    List<Article> listForDisable();
+
 
 }
